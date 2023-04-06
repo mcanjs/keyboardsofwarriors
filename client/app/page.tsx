@@ -1,13 +1,9 @@
-'use client';
-import { Inter, Rubik } from 'next/font/google';
-
-const inter = Inter({ subsets: ['latin'] });
-const rubik = Rubik({ subsets: ['latin-ext'] });
+import Link from 'next/link';
 
 export default function Home() {
   return (
     <main>
-      <input onKeyUp={(e) => console.log(e.key)} />
+      <Link href="/matchmaking">Matchmaking</Link>
     </main>
   );
 }
