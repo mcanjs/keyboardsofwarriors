@@ -1,4 +1,3 @@
-import { logger } from '@/utils/logger';
 import http from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 
@@ -19,7 +18,9 @@ export class ServerSocket {
   }
 
   private deleteQueId(id: string): void {
-    this.queIds.splice(this.queIds.indexOf(id), 1);
+    if (this.queIds.indexOf(id) > -1) {
+      this.queIds.splice(this.queIds.indexOf(id), 1);
+    }
   }
 
   private startQue(socket: Socket): void {

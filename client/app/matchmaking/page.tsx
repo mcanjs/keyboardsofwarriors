@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@/components/button';
+import Timer from '@/components/timer';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
@@ -57,6 +58,7 @@ export default function Matchmaking() {
       <Button onClick={startOrEndQueue} bgColor={isQueueContinue ? 'red' : undefined}>
         {!isQueueContinue ? 'Start Queue' : 'Left Queue'}
       </Button>
+      {isQueueContinue && <Timer continueTimer={isQueueContinue} />}
     </div>
   );
 }
