@@ -3,14 +3,18 @@
 
 datasource db {
   provider = "mongodb"
-  url      = env("DATABASE_URL")
+  url      = "mongodb+srv://mehmetcankizilyer:luPctBuSZy5VxtpH@cluster0.1ffdtl3.mongodb.net/test"
 }
 
 generator client {
   provider = "prisma-client-js"
 }
 
+
 model User {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
-  email String
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  email         String      @unique
+  matchmaking   Json
+  password      String
+  queuePosition String
 }
