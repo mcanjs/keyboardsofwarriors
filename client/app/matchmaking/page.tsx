@@ -12,7 +12,7 @@ import { authOptions } from '../api/auth/[...nextauth]/route';
 import { useUser } from '../hooks/user';
 
 export default function Matchmaking() {
-  const { session, status } = useUser();
+  const { status } = useUser();
   const au = useRef<any>();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [socket, setSocket] = useState<undefined | Socket>(undefined);
