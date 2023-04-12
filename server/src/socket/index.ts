@@ -1,3 +1,6 @@
+import { ISocketUser } from '@/interfaces/socket.interface';
+import { logger } from '@/utils/logger';
+import { PrismaClient } from '@prisma/client';
 import http from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 
@@ -6,8 +9,8 @@ export class ServerSocket {
   public server: http.Server;
   public queCounter = 0;
   public queIds: string[] = [];
-  public queMatchingIds: string[] = [];
   public inPlayingPlayers = 0;
+  public prisma = new PrismaClient();
   constructor(appServer: Express.Application) {
     this.server = http.createServer(appServer);
     this.io = new SocketIOServer(this.server, {
@@ -25,24 +28,13 @@ export class ServerSocket {
     }
   }
 
-  private startQue(socket: Socket): void {
-    socket.on('queue:started', () => {
-      if (this.queIds.indexOf(socket.id) === -1) {
-        this.queCounter += 1;
-        this.queIds.push(socket.id);
-        this.io.emit('queue:counter', this.queCounter);
-
-        this.matchFounded(socket);
-      }
-    });
-  }
-
   private matchRejected(socket: Socket): void {
     socket.on('match:rejected', () => {
       this.queCounter -= 1;
       //* They are leaving to queue:
       this.deleteQueId(socket.id);
       this.io.emit('queue:counter', this.queCounter);
+      socket.disconnect();
     });
   }
 
@@ -55,16 +47,80 @@ export class ServerSocket {
     });
   }
 
-  private matchFounded(socket: Socket): void {
-    //* Socket Push Event
-    socket.emit('match:founded');
+  private async matchCreate(socket: Socket, user: ISocketUser): Promise<void> {
+    const socketUser = await this.prisma.user.findUnique({
+      where: { email: user.email },
+    });
+
+    const waitTime = 3000; // Bekleme süresi milisaniye cinsinden (1 saniye)
+
+    let opponent: ISocketUser | null = null;
+
+    while (!opponent) {
+      const onlineUsers = await this.prisma.user.findMany({
+        where: {
+          queuePosition: {
+            not: '',
+          },
+          rank: { gte: socketUser.rank - 10, lte: socketUser.rank + 10 },
+          id: { not: socketUser.id },
+        },
+        orderBy: { rank: 'asc' },
+      });
+
+      opponent = onlineUsers[0];
+
+      if (!opponent) {
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
+    }
+
+    if (opponent) {
+      //* Socket Push Event
+      socket.emit('match:founded');
+    }
+  }
+
+  private startQue(socket: Socket): void {
+    socket.on('queue:started', (user: ISocketUser) => {
+      if (this.queIds.indexOf(socket.id) === -1) {
+        this.prisma.user
+          .update({
+            where: {
+              email: user.email,
+            },
+            data: {
+              queuePosition: socket.id,
+            },
+          })
+          .then(() => {
+            logger.info(`${user.email} started queue`);
+            this.queCounter += 1;
+            this.queIds.push(socket.id);
+            this.io.emit('queue:counter', this.queCounter);
+          });
+        this.matchCreate(socket, user);
+      }
+    });
   }
 
   private stopQue(socket: Socket): void {
-    socket.on('queue:stop', () => {
-      this.queCounter -= 1;
-      this.deleteQueId(socket.id);
-      this.io.emit('queue:counter', this.queCounter);
+    socket.on('queue:stop', (user: ISocketUser) => {
+      this.prisma.user
+        .update({
+          where: {
+            email: user.email,
+          },
+          data: {
+            queuePosition: '',
+          },
+        })
+        .then(() => {
+          logger.info(`${user.email} stopped queue`);
+          this.queCounter -= 1;
+          this.deleteQueId(socket.id);
+          this.io.emit('queue:counter', this.queCounter);
+        });
     });
   }
 
@@ -72,11 +128,23 @@ export class ServerSocket {
     this.io.on('connection', socket => {
       console.log('One user connected:', socket.id);
       //
-      socket.on('disconnect', () => {
-        if (this.queIds.indexOf(socket.id) > -1) {
-          this.queCounter -= 1;
-          this.io.emit('queue:counter', this.queCounter);
-        }
+      socket.on('disconnect', async () => {
+        logger.info(`${socket.id} disconnected`);
+        await this.prisma.user
+          .updateMany({
+            where: {
+              queuePosition: socket.id,
+            },
+            data: {
+              queuePosition: '',
+            },
+          })
+          .then(() => {
+            if (this.queIds.indexOf(socket.id) > -1) {
+              this.queCounter -= 1;
+              this.io.emit('queue:counter', this.queCounter);
+            }
+          });
       });
 
       //* Start Que

@@ -1,4 +1,3 @@
-export interface IRejectFoundedMatchOptions {
-  id: string;
-  rejectCounter: number;
+export interface ISocketUser {
+  email: string;
 }

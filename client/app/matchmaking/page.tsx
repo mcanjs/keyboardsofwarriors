@@ -12,13 +12,14 @@ import { authOptions } from '../api/auth/[...nextauth]/route';
 import { useUser } from '../hooks/user';
 
 export default function Matchmaking() {
-  const { status } = useUser();
+  const { session, status } = useUser();
   const au = useRef<any>();
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [socket, setSocket] = useState<undefined | Socket>(undefined);
   const [online, setOnline] = useState<number>(0);
   const [isQueueContinue, setIsQueueContinue] = useState<boolean>(false);
   const [isMatchFounded, setIsMatchFounded] = useState<boolean>(false);
+  const [isOperationLoading, setIsOperationLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const newSocket = io('http://localhost:4000', {});
@@ -29,8 +30,8 @@ export default function Matchmaking() {
     });
 
     newSocket.on('queue:counter', (arg: number) => {
-      console.log('Que counter:', arg);
       setOnline(arg);
+      setIsOperationLoading(false);
     });
 
     newSocket.on('disconnect', () => {
@@ -48,22 +49,27 @@ export default function Matchmaking() {
     return () => {
       newSocket.disconnect();
     };
-  }, [status === 'authenticated']);
+  }, [status === 'authenticated', typeof socket === 'undefined']);
 
   const startOrEndQueue = () => {
     if (!socket) return console.error('Socket connection ERRORR!!!');
+    setIsOperationLoading(true);
     if (isQueueContinue) {
       au.current.pause();
       au.current.src = '/fx/que:leave.wav';
       au.current.play();
       setIsQueueContinue(false);
-      socket.emit('queue:stop');
+      socket.emit('queue:stop', {
+        email: session?.user?.email,
+      });
     } else {
       au.current.pause();
       au.current.src = '/fx/que:start.wav';
       au.current.play();
       setIsQueueContinue(true);
-      socket.emit('queue:started');
+      socket.emit('queue:started', {
+        email: session?.user?.email,
+      });
     }
   };
 
@@ -75,41 +81,51 @@ export default function Matchmaking() {
 
   const matchRejectHandler = () => {
     socket?.emit('match:rejected');
+    socket?.disconnect();
     setIsMatchFounded(false);
     setIsQueueContinue(false);
+    setSocket(undefined);
   };
 
   return (
     <div>
-      {isLoading ? (
-        <>
-          <Loader />
-        </>
-      ) : (
+      {typeof status !== 'undefined' && status === 'authenticated' && (
         <div>
-          {isQueueContinue && (
+          {isLoading ? (
             <>
-              <div>Socket ID: {socket?.id}</div>
-              <div>Queue: {online}</div>
+              <Loader />
             </>
-          )}
-          <Button onClick={startOrEndQueue} bgColor={isQueueContinue ? 'red' : undefined}>
-            {!isQueueContinue ? 'Start Queue' : 'Left Queue'}
-          </Button>
-          <audio src={`/fx/que:start.wav`} ref={au}></audio>
-          {isQueueContinue && <Timer continueTimer={isQueueContinue} />}
-          {isMatchFounded && (
-            <ModalWrapper>
-              <ModalContainer>
-                <ModalHead>Maç bulundu</ModalHead>
-                <ModalBody>
-                  <Button onClick={matchAcceptHandler}>Onayla</Button>
-                  <Button onClick={matchRejectHandler} bgColor="red" style={{ marginLeft: '10px' }}>
-                    Reddet
-                  </Button>
-                </ModalBody>
-              </ModalContainer>
-            </ModalWrapper>
+          ) : (
+            <div>
+              {isQueueContinue && !isOperationLoading && (
+                <>
+                  <div>Socket ID: {socket?.id}</div>
+                  <div>Queue: {online}</div>
+                </>
+              )}
+              {isOperationLoading ? (
+                <Loader />
+              ) : (
+                <Button onClick={startOrEndQueue} bgColor={isQueueContinue ? 'red' : undefined}>
+                  {!isQueueContinue ? 'Start Queue' : 'Left Queue'}
+                </Button>
+              )}
+              <audio src={`/fx/que:start.wav`} ref={au}></audio>
+              {isQueueContinue && !isOperationLoading && <Timer continueTimer={isQueueContinue} />}
+              {isMatchFounded && (
+                <ModalWrapper>
+                  <ModalContainer>
+                    <ModalHead>Maç bulundu</ModalHead>
+                    <ModalBody>
+                      <Button onClick={matchAcceptHandler}>Onayla</Button>
+                      <Button onClick={matchRejectHandler} bgColor="red" style={{ marginLeft: '10px' }}>
+                        Reddet
+                      </Button>
+                    </ModalBody>
+                  </ModalContainer>
+                </ModalWrapper>
+              )}
+            </div>
           )}
         </div>
       )}
