@@ -40,11 +40,15 @@ export class ServerSocket {
 
   private matchAccepted(socket: Socket): void {
     socket.on('match:accepted', () => {
-      this.queCounter -= 1;
-      this.inPlayingPlayers += 1;
-      this.deleteQueId(socket.id);
-      this.io.emit('queue:counter', this.queCounter);
+      // this.queCounter -= 1;
+      // this.inPlayingPlayers += 1;
+      // this.deleteQueId(socket.id);
+      // this.io.emit('queue:counter', this.queCounter);
     });
+  }
+
+  private matchAcceptedOppents(socket: Socket): void {
+    socket.emit('match:acceptedOpponents');
   }
 
   private async matchCreate(socket: Socket, user: ISocketUser): Promise<void> {
@@ -52,8 +56,7 @@ export class ServerSocket {
       where: { email: user.email },
     });
 
-    const waitTime = 3000; // Bekleme süresi milisaniye cinsinden (1 saniye)
-
+    const waitTime = 1000;
     let opponent: ISocketUser | null = null;
 
     while (!opponent) {

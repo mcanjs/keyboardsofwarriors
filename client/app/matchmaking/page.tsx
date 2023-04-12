@@ -10,6 +10,8 @@ import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { authOptions } from '../api/auth/[...nextauth]/route';
 import { useUser } from '../hooks/user';
+import { Flex } from '@/components/flex';
+import Countdown from '@/components/countdown';
 
 export default function Matchmaking() {
   const { session, status } = useUser();
@@ -37,6 +39,8 @@ export default function Matchmaking() {
     newSocket.on('disconnect', () => {
       console.log('Socket disconnected');
     });
+
+    newSocket.on('match:acceptedOpponents', () => {});
 
     newSocket.on('match:founded', () => {
       console.log('match founded');
@@ -75,8 +79,6 @@ export default function Matchmaking() {
 
   const matchAcceptHandler = () => {
     socket?.emit('match:accepted');
-    setIsMatchFounded(false);
-    setIsQueueContinue(false);
   };
 
   const matchRejectHandler = () => {
@@ -85,6 +87,11 @@ export default function Matchmaking() {
     setIsMatchFounded(false);
     setIsQueueContinue(false);
     setSocket(undefined);
+  };
+
+  const countdownEnded = () => {
+    //? When finish countdown will emit match:reject event and will dc socket
+    matchRejectHandler();
   };
 
   return (
@@ -117,10 +124,14 @@ export default function Matchmaking() {
                   <ModalContainer>
                     <ModalHead>Maç bulundu</ModalHead>
                     <ModalBody>
-                      <Button onClick={matchAcceptHandler}>Onayla</Button>
-                      <Button onClick={matchRejectHandler} bgColor="red" style={{ marginLeft: '10px' }}>
-                        Reddet
-                      </Button>
+                      <Flex>
+                        <Button onClick={matchAcceptHandler} bgColor="#4ADB61">
+                          Onayla
+                        </Button>
+                      </Flex>
+                      <Flex>
+                        <Countdown isStart={true} callback={countdownEnded} />
+                      </Flex>
                     </ModalBody>
                   </ModalContainer>
                 </ModalWrapper>
