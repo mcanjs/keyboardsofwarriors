@@ -10,7 +10,7 @@ html {
 }
 
 body {
-  margin: 0;
+  margin: 119px 0 0 0;
 }
 
 main {

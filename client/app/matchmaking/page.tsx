@@ -1,145 +1,158 @@
 'use client';
 
 import { Button } from '@/components/button';
-import { Loader } from '@/components/loader';
-import { ModalBody, ModalContainer, ModalHead, ModalWrapper } from '@/components/modal';
-import Timer from '@/components/timer';
-import { getServerSession } from 'next-auth';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
-import { authOptions } from '../api/auth/[...nextauth]/route';
-import { useUser } from '../hooks/user';
 import { Flex } from '@/components/flex';
-import Countdown from '@/components/countdown';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useUser } from '../hooks/user';
+import { Socket, io } from 'socket.io-client';
+import Timer from '@/components/timer';
+import { Loader } from '@/components/loader';
+import { ModalBody, ModalHead, ModalWrapper } from '@/components/modal';
+import { useRouter } from 'next/navigation';
+import Match from '../match/page';
 
 export default function Matchmaking() {
+  //* Hooks
   const { session, status } = useUser();
-  const au = useRef<any>();
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const router = useRouter();
+
+  //* States
   const [socket, setSocket] = useState<undefined | Socket>(undefined);
-  const [online, setOnline] = useState<number>(0);
-  const [isQueueContinue, setIsQueueContinue] = useState<boolean>(false);
+  const [isContinueQueue, setIsContinueQueue] = useState<boolean>(false);
   const [isMatchFounded, setIsMatchFounded] = useState<boolean>(false);
-  const [isOperationLoading, setIsOperationLoading] = useState<boolean>(false);
+  const [isMatchApproved, setIsMatchApproved] = useState<boolean>(false);
+  const [isMatchStarted, setIsMatchStarted] = useState<boolean>(false);
 
   useEffect(() => {
-    const newSocket = io('http://localhost:4000', {});
-    setSocket(newSocket);
-    newSocket.on('connect', () => {
-      console.log('Socket connected');
-      setIsLoading(false);
-    });
+    let newSocket: undefined | Socket = socket;
 
-    newSocket.on('queue:counter', (arg: number) => {
-      setOnline(arg);
-      setIsOperationLoading(false);
-    });
-
-    newSocket.on('disconnect', () => {
-      console.log('Socket disconnected');
-    });
-
-    newSocket.on('match:acceptedOpponents', () => {});
-
-    newSocket.on('match:founded', () => {
-      console.log('match founded');
-      au.current.pause();
-      au.current.src = '/fx/game:start.wav';
-      au.current.play();
-      setIsMatchFounded(true);
-    });
-
-    return () => {
-      newSocket.disconnect();
+    //? Socket connect function
+    const onConnect = () => {
+      console.log('connected user');
     };
-  }, [status === 'authenticated', typeof socket === 'undefined']);
 
-  const startOrEndQueue = () => {
-    if (!socket) return console.error('Socket connection ERRORR!!!');
-    setIsOperationLoading(true);
-    if (isQueueContinue) {
-      au.current.pause();
-      au.current.src = '/fx/que:leave.wav';
-      au.current.play();
-      setIsQueueContinue(false);
-      socket.emit('queue:stop', {
-        email: session?.user?.email,
-      });
+    //? Socket disconnect function
+    const onDisconnect = () => {
+      console.log('disconnected user');
+    };
+
+    //? Socket queue change function
+    const onQueueChange = (counter: number) => {
+      console.log('Que counter', counter);
+    };
+
+    //? Socket queue ban function
+    const onQueueBan = (date: string) => {
+      console.log(`user banned to queue ${date}`);
+    };
+
+    //? Socket match founded function
+    const onMatchFounded = () => {
+      setIsMatchFounded(true);
+      setTimeout(() => {
+        setIsMatchFounded(false);
+        setIsMatchApproved(false);
+      }, 10001);
+    };
+
+    //? Socket match starting function
+    const onMatchStarting = () => {
+      setIsMatchStarted(true);
+      console.log('Match starting....');
+    };
+
+    //? Socket match reject function
+    const onMatchRejected = () => {
+      setIsContinueQueue(false);
+    };
+
+    //? Socket room join and creating function
+    const onRoomJoined = (roomData: object) => {
+      setIsMatchFounded(false);
+      setIsMatchApproved(false);
+      setIsContinueQueue(false);
+      console.log(`Room creating and ${roomData}`);
+    };
+
+    if (status === 'authenticated' && typeof socket === 'undefined') {
+      //? Create socket connection
+      newSocket = io('http://localhost:4000');
+
+      //? Peer to created connection from state hook
+      setSocket(newSocket);
+
+      /**
+       *?Socket listeners
+       */
+
+      //? Root listeners
+      newSocket.on('connect', onConnect);
+      newSocket.on('disconnect', onDisconnect);
+
+      //? Queue listeners
+      newSocket.on('queue:counter', onQueueChange);
+      newSocket.on('queue:ban', onQueueBan);
+
+      //? Match listeners
+      newSocket.on('match:founded', onMatchFounded);
+      newSocket.on('match:starting', onMatchStarting);
+      newSocket.on('match:rejected', onMatchRejected);
+      newSocket.on('room:joined', onRoomJoined);
+
+      //? Log listeners
+      newSocket.on('log:rooms', (data) => console.log(data));
+    }
+
+    return () => {};
+  }, [status, socket]);
+
+  const findMatch = () => {
+    if (isContinueQueue) {
+      //* Leave to Queue Scope
+      socket?.emit('queue:stop', { email: session?.user?.email });
+      setIsContinueQueue(false);
     } else {
-      au.current.pause();
-      au.current.src = '/fx/que:start.wav';
-      au.current.play();
-      setIsQueueContinue(true);
-      socket.emit('queue:started', {
-        email: session?.user?.email,
-      });
+      //* Join to Queue Scope
+
+      socket?.emit('queue:started', { email: session?.user?.email });
+      setIsContinueQueue(true);
     }
   };
 
-  const matchAcceptHandler = () => {
+  const approvedMatch = () => {
+    setIsMatchApproved(true);
     socket?.emit('match:accepted');
+    console.log('Match accepted');
   };
 
-  const matchRejectHandler = () => {
-    socket?.emit('match:rejected');
-    socket?.disconnect();
-    setIsMatchFounded(false);
-    setIsQueueContinue(false);
-    setSocket(undefined);
-  };
-
-  const countdownEnded = () => {
-    //? When finish countdown will emit match:reject event and will dc socket
-    matchRejectHandler();
-  };
-
-  return (
-    <div>
-      {typeof status !== 'undefined' && status === 'authenticated' && (
-        <div>
-          {isLoading ? (
-            <>
-              <Loader />
-            </>
-          ) : (
-            <div>
-              {isQueueContinue && !isOperationLoading && (
-                <>
-                  <div>Socket ID: {socket?.id}</div>
-                  <div>Queue: {online}</div>
-                </>
-              )}
-              {isOperationLoading ? (
-                <Loader />
-              ) : (
-                <Button onClick={startOrEndQueue} bgColor={isQueueContinue ? 'red' : undefined}>
-                  {!isQueueContinue ? 'Start Queue' : 'Left Queue'}
+  return typeof socket === 'undefined' ? (
+    <Loader />
+  ) : (
+    <Flex justifyContent="center" alignItems="center" direction="column">
+      {!isMatchStarted ? (
+        <>
+          <div>{socket.id}</div>
+          {isContinueQueue && <Timer continueTimer={isContinueQueue} />}
+          <Button onClick={findMatch}>{!isContinueQueue ? 'Find a Match' : 'Leave to Queue'}</Button>
+          <Button onClick={() => socket.emit('check:rooms')} marginTop="20px">
+            Log: ROOMS
+          </Button>
+          {isMatchFounded && (
+            <ModalWrapper>
+              <ModalHead>
+                <h2 style={{ margin: '0px' }}>Match Founded</h2>
+              </ModalHead>
+              <ModalBody>
+                <Button bgColor="#4ADB61" onClick={approvedMatch} disabled={isMatchApproved}>
+                  Approve
                 </Button>
-              )}
-              <audio src={`/fx/que:start.wav`} ref={au}></audio>
-              {isQueueContinue && !isOperationLoading && <Timer continueTimer={isQueueContinue} />}
-              {isMatchFounded && (
-                <ModalWrapper>
-                  <ModalContainer>
-                    <ModalHead>Maç bulundu</ModalHead>
-                    <ModalBody>
-                      <Flex>
-                        <Button onClick={matchAcceptHandler} bgColor="#4ADB61">
-                          Onayla
-                        </Button>
-                      </Flex>
-                      <Flex>
-                        <Countdown isStart={true} callback={countdownEnded} />
-                      </Flex>
-                    </ModalBody>
-                  </ModalContainer>
-                </ModalWrapper>
-              )}
-            </div>
+              </ModalBody>
+            </ModalWrapper>
           )}
-        </div>
+        </>
+      ) : (
+        <Match socket={socket} />
       )}
-    </div>
+    </Flex>
   );
 }

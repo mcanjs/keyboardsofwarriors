@@ -1,5 +1,14 @@
 import styled from 'styled-components';
 import { FaChevronDown } from 'react-icons/fa';
+import Link from 'next/link';
+
+export const Navbar = styled.div`
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin-top: 30px;
+`;
 
 export const NavbarLeftWrapper = styled.div`
   display: flex;
@@ -52,4 +61,11 @@ export const NavbarMenuList = styled.ul`
 `;
 export const NavbarListItem = styled.li`
   padding-right: 69px;
+`;
+
+export const NavbarListLink = styled(Link)`
+  font-weight: 400;
+  font-size: 16px;
+  text-decoration: none;
+  color: #000000;
 `;

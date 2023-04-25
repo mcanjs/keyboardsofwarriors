@@ -40,9 +40,9 @@ export const authOptions: NextAuthOptions = {
         }
 
         return {
-          id: user.id + '',
+          id: user.id,
           email: user.email,
-          randomKey: 'Hey cool',
+          randomKey: 'randomkey',
         };
       },
     }),
@@ -54,7 +54,7 @@ export const authOptions: NextAuthOptions = {
         user: {
           ...session.user,
           id: token.id,
-          randomKey: token.randomKey,
+          randomKey: 'randomkey',
         },
       };
     },
@@ -70,6 +70,7 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
   },
+  events: {},
 };
 
 const handler = NextAuth(authOptions);

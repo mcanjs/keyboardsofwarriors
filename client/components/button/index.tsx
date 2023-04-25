@@ -6,6 +6,7 @@ interface IButtonProps {
   fontSize?: string;
   color?: string;
   radius?: string;
+  marginTop?: string;
   paddingTop?: string;
   paddingRight?: string;
   paddingBottom?: string;
@@ -13,13 +14,15 @@ interface IButtonProps {
   hoverBg?: string;
   border?: string;
   fontWeight?: '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900';
+  boxShadow?: string;
 }
 
 export const Button = styled.button<IButtonProps>`
+  margin-top: ${(props) => props.marginTop || '0px'};
   padding-top: ${(props) => props.paddingTop || '20px'};
-  padding-right: ${(props) => props.paddingRight || '75px'};
+  padding-right: ${(props) => props.paddingRight || '16px'};
   padding-bottom: ${(props) => props.paddingBottom || '20px'};
-  padding-left: ${(props) => props.paddingLeft || '75px'};
+  padding-left: ${(props) => props.paddingLeft || '16px'};
   border: ${(props) => props.border || '0'};
   border-radius: ${(props) => props.radius || '8px'};
   transition: all 0.325s ease-out;
@@ -28,6 +31,7 @@ export const Button = styled.button<IButtonProps>`
   font-size: ${(props) => props.fontSize || '14px'};
   font-weight: ${(props) => props.fontWeight || '400'};
   cursor: pointer;
+  box-shadow: ${(props) => props.boxShadow || 'none'};
 
   &:hover {
     transition: all 0.125s ease-in;
@@ -36,5 +40,9 @@ export const Button = styled.button<IButtonProps>`
 
   &:active {
     opacity: 0.76;
+  }
+  &:disabled {
+    cursor: progress;
+    opacity: 0.5;
   }
 `;

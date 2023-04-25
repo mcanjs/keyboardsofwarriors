@@ -2,7 +2,8 @@ import Navbar from '@/components/navbar';
 import StyledComponentsRegistry from './registry';
 import { Inter } from 'next/font/google';
 import { GlobalStyle } from '@/style';
-import { Providers } from './providers';
+import { AuthProvider } from './providers';
+import { PageCapsule } from './match/styles';
 
 export const metadata = {
   title: 'Keyboards Warriors',
@@ -10,7 +11,7 @@ export const metadata = {
 };
 
 const inter = Inter({
-  weight: ['100', '300', '400', '500', '700', '900'],
+  weight: ['100', '300', '400', '700', '900'],
   subsets: ['latin', 'latin-ext'],
   display: 'swap',
 });
@@ -18,17 +19,17 @@ const inter = Inter({
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={inter.className}>
-      <StyledComponentsRegistry>
-        <body>
-          <Providers>
+      <body>
+        <AuthProvider>
+          <StyledComponentsRegistry>
             <div>
               <Navbar />
+              <div>{children}</div>
+              <GlobalStyle />
             </div>
-            <div>{children}</div>
-          </Providers>
-        </body>
-        <GlobalStyle />
-      </StyledComponentsRegistry>
+          </StyledComponentsRegistry>
+        </AuthProvider>
+      </body>
     </html>
   );
 }

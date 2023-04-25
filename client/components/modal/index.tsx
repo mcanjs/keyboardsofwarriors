@@ -8,6 +8,7 @@ export const ModalWrapper = styled.div<{ withoutBg?: boolean }>`
   top: 0;
   left: 0;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   transition: all 0.225s ease-in;
