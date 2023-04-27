@@ -21,7 +21,7 @@ export default function Matchmaking() {
   const [isContinueQueue, setIsContinueQueue] = useState<boolean>(false);
   const [isMatchFounded, setIsMatchFounded] = useState<boolean>(false);
   const [isMatchApproved, setIsMatchApproved] = useState<boolean>(false);
-  const [isMatchStarted, setIsMatchStarted] = useState<boolean>(false);
+  const [isRedirectToGamePage, setIsRedirectToGamePage] = useState<boolean>(false);
 
   useEffect(() => {
     let newSocket: undefined | Socket = socket;
@@ -56,13 +56,14 @@ export default function Matchmaking() {
     };
 
     //? Socket match starting function
-    const onMatchStarting = () => {
-      setIsMatchStarted(true);
-      console.log('Match starting....');
+    const onMatchRedirect = () => {
+      console.log('redirect to game page');
+      setIsRedirectToGamePage(true);
     };
 
     //? Socket match reject function
     const onMatchRejected = () => {
+      console.log('match rejected');
       setIsContinueQueue(false);
     };
 
@@ -76,7 +77,7 @@ export default function Matchmaking() {
 
     if (status === 'authenticated' && typeof socket === 'undefined') {
       //? Create socket connection
-      newSocket = io('http://localhost:4000');
+      newSocket = io(`http://localhost:4000?email=${session?.user?.email}`);
 
       //? Peer to created connection from state hook
       setSocket(newSocket);
@@ -95,8 +96,10 @@ export default function Matchmaking() {
 
       //? Match listeners
       newSocket.on('match:founded', onMatchFounded);
-      newSocket.on('match:starting', onMatchStarting);
+      newSocket.on('match:redirect', onMatchRedirect);
       newSocket.on('match:rejected', onMatchRejected);
+
+      //? Room listeners
       newSocket.on('room:joined', onRoomJoined);
 
       //? Log listeners
@@ -129,7 +132,7 @@ export default function Matchmaking() {
     <Loader />
   ) : (
     <Flex justifyContent="center" alignItems="center" direction="column">
-      {!isMatchStarted ? (
+      {!isRedirectToGamePage ? (
         <>
           <div>{socket.id}</div>
           {isContinueQueue && <Timer continueTimer={isContinueQueue} />}

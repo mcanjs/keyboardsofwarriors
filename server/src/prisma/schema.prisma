@@ -28,5 +28,6 @@ model User {
   password      String
   queuePosition String
   matchPosition String
+  isUserInApproval Boolean
   queueBan String
 }

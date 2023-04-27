@@ -1,3 +1,4 @@
+import { FOUND_OPPONENT_WAIT_TIME, MATCH_STARTABLE_WAIT_TIME, MATCH_STARTED_WAIT_TIME, MATCH_STARTING_WAIT_TIME } from '@/config/constants';
 import Matcher from '@/core/matcher';
 import { logger } from '@/utils/logger';
 import { PrismaClient, User } from '@prisma/client';
@@ -47,6 +48,7 @@ export class ServerSocket {
         data: {
           queuePosition: '',
           queueBan: new Date(date.getTime() + 30000).toString(),
+          isUserInApproval: false,
         },
       })
       .then(() => {
@@ -56,7 +58,7 @@ export class ServerSocket {
       });
   }
 
-  private async updateDatabase(roomId: string, socket: Socket, opponentSocket: Socket, user: User, opponent: User): Promise<void> {
+  private async updateDatabaseForMatchStarting(roomId: string, socket: Socket, opponentSocket: Socket, user: User, opponent: User): Promise<void> {
     if (!this.matcher.checkCreatedDatabaseInformations(roomId)) {
       await this.prisma.matches.create({
         data: {
@@ -75,6 +77,23 @@ export class ServerSocket {
       data: {
         queuePosition: '',
         matchPosition: roomId,
+        isUserInApproval: false,
+      },
+    });
+  }
+
+  private async updateDatabaseForMatchEnding(firstOpponent: User, secondOpponent: User): Promise<void> {
+    await this.prisma.user.updateMany({
+      where: {
+        OR: [
+          {
+            id: firstOpponent.id,
+          },
+          { id: secondOpponent.id },
+        ],
+      },
+      data: {
+        matchPosition: '',
       },
     });
   }
@@ -96,18 +115,52 @@ export class ServerSocket {
     socket.emit('room:joined', JSON.stringify(roomData));
   }
 
+  private usersRoomConnection(roomId: string, socket: Socket): void {
+    socket.on('match:connected-user', (id: string) => {
+      this.matcher.setUserReady(roomId, id);
+
+      if (this.matcher.checkIsUsersReady(roomId)) {
+        this.io.to(roomId).emit('match:startable');
+        this.matcher.changeIsMatchStarted(roomId);
+
+        //? Client-side waiting 3 seconds for this working following code
+        setTimeout(() => {
+          this.io.to(roomId).emit('match:started');
+        }, MATCH_STARTED_WAIT_TIME);
+      }
+    });
+  }
+
+  private checkUsersConnectedSuccessfully(roomId: string, socket: Socket, user: User, opponent: User): void {
+    setTimeout(() => {
+      console.log('match starting wait time ended');
+      if (!this.matcher.checkIsMatchStarted(roomId)) {
+        //? Match cancel emit todos
+        this.io.to(roomId).emit('match:canceled');
+        //? Check is who not connected todos
+        //? Lose point unconnected user todos
+
+        //? Terminate match but with special commands
+        this.updateDatabaseForMatchEnding(user, opponent);
+      }
+    }, MATCH_STARTING_WAIT_TIME);
+  }
+
   private async matchStarting(roomId: string, socket: Socket, opponentSocket: Socket, user: User, opponent: User) {
     //? Update database
-    await this.updateDatabase(roomId, socket, opponentSocket, user, opponent);
+    await this.updateDatabaseForMatchStarting(roomId, socket, opponentSocket, user, opponent);
 
     //? Create socket room
     await this.createSocketRoom(roomId, socket, opponentSocket);
 
-    socket.emit('match:starting');
+    //? Redirect users to game page
+    socket.emit('match:redirect');
 
-    socket.on('user:connected', (id: string) => {
-      console.log(`connected user: ${id}`);
-    });
+    //? Users and rooms management for starting...
+    this.usersRoomConnection(roomId, socket);
+
+    //? Check users connections
+    this.checkUsersConnectedSuccessfully(roomId, socket, user, opponent);
   }
 
   private checkIsMatchStartable(socket: Socket, opponent: User, user: User): void {
@@ -126,17 +179,17 @@ export class ServerSocket {
       } else {
         const accepted: string = this.matcher.foundAcceptedMatch(roomId);
         if (accepted !== socket.id) {
+          console.log(accepted, socket.id);
           await this.matchRejected(socket, user);
         }
         this.matcher.removeRoom(roomId);
       }
-    }, 10001);
+    }, MATCH_STARTABLE_WAIT_TIME);
   }
 
   private async foundOpponent(socket: Socket, user: User): Promise<void> {
     const socketUser = user;
 
-    const waitTime = 1000;
     let opponent: User | null = null;
 
     while (this.queIds.indexOf(socket.id) > -1 && !opponent) {
@@ -144,6 +197,9 @@ export class ServerSocket {
         where: {
           queuePosition: {
             not: '',
+          },
+          isUserInApproval: {
+            not: true,
           },
           rank: { gte: socketUser.rank - 10, lte: socketUser.rank + 10 },
           id: { not: socketUser.id },
@@ -154,12 +210,20 @@ export class ServerSocket {
       opponent = onlineUsers[0];
 
       if (!opponent) {
-        await new Promise(resolve => setTimeout(resolve, waitTime));
+        await new Promise(resolve => setTimeout(resolve, FOUND_OPPONENT_WAIT_TIME));
       }
     }
 
     if (opponent) {
       //* Socket Push Event
+      await this.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          isUserInApproval: true,
+        },
+      });
       socket.emit('match:founded');
       this.checkIsMatchStartable(socket, opponent, user);
     }
@@ -178,7 +242,7 @@ export class ServerSocket {
             },
           })
           .then((user: User) => {
-            console.log(new Date(user.queueBan), user.queueBan);
+            console.log(new Date(), new Date(user.queueBan));
             if (user.queueBan && new Date() < new Date(user.queueBan)) {
               socket.emit('queue:ban', user.queueBan);
             } else {
@@ -209,27 +273,59 @@ export class ServerSocket {
     });
   }
 
-  private checkRooms(socket: Socket) {
+  private checkRooms(socket: Socket): void {
     socket.on('check:rooms', () => {
       socket.emit('log:rooms', this.matcher.matches);
     });
   }
 
+  private terminateMatch(roomId: string): void {
+    if (this.matcher.checkIsMatchStarted(roomId)) {
+      this.matcher.removeRoom(roomId);
+    }
+
+    this.io.to(roomId).emit('match:ended', () => {
+      //? when match ended todos
+    });
+  }
+
+  private endMatchBecauseUserLeft(roomId: string, user: User): void {
+    this.io.to(roomId).emit('user:opponent-left', { email: user.email, id: user.id });
+
+    this.terminateMatch(roomId);
+  }
+
+  private async disconnectionControls(socket: Socket, email: any): Promise<void> {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email,
+      },
+    });
+
+    if (user.matchPosition !== '') {
+      this.endMatchBecauseUserLeft(user.matchPosition, user);
+    }
+
+    await this.prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        queuePosition: '',
+        matchPosition: '',
+        isUserInApproval: false,
+      },
+    });
+  }
+
   private connection() {
     this.io.on('connection', socket => {
+      const email = socket.handshake.query.email;
       console.log('One user connected:', socket.id);
       socket.on('disconnect', async () => {
         console.log('One user disconnected', socket.id);
         this.deleteQueId(socket.id);
-        await this.prisma.user.updateMany({
-          where: {
-            queuePosition: socket.id,
-          },
-          data: {
-            queuePosition: '',
-            matchPosition: '',
-          },
-        });
+        await this.disconnectionControls(socket, email);
       });
 
       //* Start Que
