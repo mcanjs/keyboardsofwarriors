@@ -43,7 +43,7 @@ export default class Matcher {
     return false;
   }
 
-  public createDatabaseInformations(roomId: string): boolean {
+  public async createDatabaseInformations(roomId: string): Promise<boolean> {
     if (roomId && this.matches[roomId] && !this.matches[roomId].databaseMatchInformationsCreated) {
       this.matches[roomId].databaseMatchInformationsCreated = true;
       return true;
