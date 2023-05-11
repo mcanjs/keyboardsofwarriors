@@ -1,116 +1,91 @@
-interface IMatcher {
-  [key: string]: {
-    users: {
-      [key: string]: boolean;
-    };
-    databaseMatchInformationsCreated?: boolean;
-    isMatchStarted: boolean;
-    readyUsers: {
-      [key: string]: boolean;
-    };
-  };
-}
+import { IMatchRanks, IMatchRoomUsers, IMatchRooms, IMatchWatingUser } from '@/interfaces/matcher.interface';
+import MMR from '../mmr';
+import { User } from '@prisma/client';
 
 export default class Matcher {
-  public matches: IMatcher;
-  private initialRoom = {
-    users: {},
-    readyUsers: {},
-    isMatchStarted: false,
-  };
+  public matchRooms: IMatchRooms;
   constructor() {
-    this.matches = {};
+    this.matchRooms = {
+      bronze: [],
+      silver: [],
+      gold: [],
+      platinum: [],
+      diamond: [],
+      master: [],
+      grandMaster: [],
+      challenger: [],
+    };
   }
 
-  /*
-    'room1': {
-      'user1-id': boolean,
-      'user2-id': boolean
+  public checkMatchRoomForNewQueue(mmr: number, user: IMatchRoomUsers): IMatchRoomUsers[] | IMatchWatingUser {
+    const rank: IMatchRanks = MMR.generateMmrToString(mmr);
+
+    const tier = this.matchRooms[rank];
+    for (let i = 0; i < tier.length; i++) {
+      if (tier[i].length < 2) {
+        //? If the created room with the same MMR was found
+        this.addUserForCreatedRoom(rank, i, user);
+        //? Check is queue ready for 2 opponents
+        const isQueueReady: string = this.checkIsQueueReady(rank, i, user);
+        if (isQueueReady === 'ready') {
+          //? Get user infos
+          return this.getUsersData(rank, i);
+        } else if (isQueueReady === 'reached') {
+          //? Force leave for room joined to much user
+          this.forceLeaveToRoomUserForReachedUser(rank, i, user);
+          //? Return find a match
+          return this.checkMatchRoomForNewQueue(mmr, user);
+        }
+      }
     }
-    matches['room1']['user1-id']
-  */
 
-  public checkIsMatchStarted(roomId: string): boolean {
-    if (roomId && this.matches[roomId] && this.matches[roomId].isMatchStarted) return true;
-    return false;
+    //? If the created room with the same MMR was not found
+    const waitingUserData: IMatchWatingUser = this.createMatchRoom(rank, user);
+    return waitingUserData;
   }
 
-  public changeIsMatchStarted(roomId: string): boolean {
-    if (roomId && this.matches[roomId]) {
-      this.matches[roomId].isMatchStarted = true;
-      return true;
+  private getUsersData(rank: IMatchRanks, tierIndex: number): IMatchRoomUsers[] {
+    return this.matchRooms[rank][tierIndex];
+  }
+
+  private forceLeaveToRoomUserForReachedUser(rank: IMatchRanks, tierIndex: number, user: IMatchRoomUsers): void {
+    let userIndex = -1;
+    for (let i = 0; i < this.matchRooms[rank][tierIndex].length; i++) {
+      const perUser = this.matchRooms[rank][tierIndex][i];
+
+      if (perUser.email === user.email) {
+        userIndex = i;
+      }
     }
-    return false;
-  }
 
-  public async createDatabaseInformations(roomId: string): Promise<boolean> {
-    if (roomId && this.matches[roomId] && !this.matches[roomId].databaseMatchInformationsCreated) {
-      this.matches[roomId].databaseMatchInformationsCreated = true;
-      return true;
-    }
-    return false;
-  }
-
-  public checkCreatedDatabaseInformations(roomId: string): boolean {
-    if (roomId && this.matches[roomId] && !this.matches[roomId].databaseMatchInformationsCreated) {
-      return false;
-    }
-    return true;
-  }
-
-  public setUserReady(roomId: string, userId: string): boolean {
-    if (roomId && this.matches[roomId]) {
-      this.matches[roomId].readyUsers[userId] = true;
-      return true;
-    }
-    return false;
-  }
-
-  public checkIsUsersReady(roomId: string): boolean {
-    if (roomId && this.matches[roomId] && Object.keys(this.matches[roomId].readyUsers).length === 2) {
-      return true;
-    }
-    return false;
-  }
-
-  public createRoom(firstOpponent: string, secondOpponent: string): string {
-    const variations: string[] = [firstOpponent + secondOpponent, secondOpponent + firstOpponent];
-    if (this.matches[variations[0]]) {
-      return variations[0];
-    } else if (this.matches[variations[1]]) {
-      return variations[1];
-    } else {
-      this.matches[variations[0]] = this.initialRoom;
-      return variations[0];
+    if (userIndex > -1) {
+      const room = this.matchRooms[rank][tierIndex];
+      room.splice(userIndex, 1);
     }
   }
 
-  public removeRoom(roomId: string): boolean {
-    if (this.matches[roomId]) {
-      delete this.matches[roomId];
+  private checkIsQueueReady(rank: IMatchRanks, tierIndex: number, user: IMatchRoomUsers): string {
+    if (this.matchRooms[rank][tierIndex].length === 2) {
+      return 'ready';
+    } else if (this.matchRooms[rank][tierIndex].length > 2) {
+      return 'reached';
     }
-    return false;
+    return 'notReady';
   }
 
-  public addUser(roomId: string, userId: string): boolean {
-    if (this.matches[roomId]) {
-      this.matches[roomId].users[userId] = true;
-      return true;
-    }
-    return false;
+  private addUserForCreatedRoom(rank: IMatchRanks, tierIndex: number, user: IMatchRoomUsers): void {
+    this.matchRooms[rank][tierIndex].push(user);
   }
 
-  public isMatchStartable(roomId: string): boolean {
-    if (roomId && this.matches[roomId] && Object.keys(this.matches[roomId].users).length === 2) {
-      return true;
-    }
-    return false;
+  private createMatchRoom(rank: IMatchRanks, user: IMatchRoomUsers): IMatchWatingUser {
+    this.matchRooms[rank].push([user]);
+    return { tierIndex: this.matchRooms[rank].length - 1, rank };
   }
 
-  public foundAcceptedMatch(roomId: string): string {
-    if (roomId && this.matches[roomId] && Object.keys(this.matches[roomId].users).length !== 0) {
-      return Object.keys(this.matches[roomId].users)[0];
+  public removeMatchRoom(rank: IMatchRanks, tierIndex: number) {
+    if (this.matchRooms[rank][tierIndex].length < 2) {
+      //? If in room only one user
+      this.matchRooms[rank].splice(tierIndex, 1);
     }
-    return '';
   }
 }

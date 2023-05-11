@@ -3,39 +3,49 @@
 import { Loader } from '@/src/components/loader';
 import Timer from '@/src/components/timer';
 import { useAuth } from '@/src/hooks/authentication/useAuth';
+import { useSocket } from '@/src/hooks/socket/useSocket';
+import { ISocketMatchWatingUserData } from '@/src/interfaces/socket.interfaces';
 import React, { useEffect, useState } from 'react';
-import { Socket, io } from 'socket.io-client';
 
 export default function Matchmaking() {
-  const [socket, setSocket] = useState<Socket | undefined>(undefined);
-  const [isQueueContinue, setIsQueContinue] = useState<boolean>(false);
   const { auth } = useAuth();
+  const socket = useSocket();
+  const [isQueueContinue, setIsQueContinue] = useState<boolean>(false);
+  const [matchWaitingUserData, setMatchWaitingUserData] = useState<undefined | ISocketMatchWatingUserData>(undefined);
 
   useEffect(() => {
+    function onConnect() {
+      console.log('connect');
+    }
+
     function onDisconnect() {
-      console.log('user disconnect');
+      console.log('disconnect');
     }
 
-    if (typeof socket === 'undefined' && auth !== null) {
-      //? Initialize socket
-      const newSocket = io(`${process.env.NEXT_PUBLIC_SOCKET_URL}`, {
-        reconnectionDelayMax: 10000,
-        query: { email: auth?.email },
-      });
-      //? Define socket
-      setSocket(newSocket);
+    if (typeof socket !== 'undefined' && auth !== null) {
+      //? Connect event listener
+      socket.on('connect', onConnect);
 
-      newSocket.on('connect', () => {
-        //? Disconnect
-        newSocket.on('disconnect', onDisconnect);
-      });
+      //? Disconnect event listener
+      socket.on('disconnect', onDisconnect);
+
+      //? Logs event listener
+      socket.on('logs:matchRooms', (data) => console.log(data));
+
+      //? Match event listeners
+      socket.on('match:founded', () => console.log('match founded'));
+
+      //? Queue event listeners
+      socket.on('queue:waitingUserData', (data: ISocketMatchWatingUserData) => setMatchWaitingUserData(data));
     }
-  }, [typeof socket === 'undefined' && auth !== null]);
+  }, [socket, auth]);
 
   const findMatch = () => {
     if (isQueueContinue) {
+      socket?.emit('queue:leave', matchWaitingUserData);
       setIsQueContinue(false);
     } else {
+      socket?.emit('queue:start');
       setIsQueContinue(true);
     }
   };
@@ -62,7 +72,10 @@ export default function Matchmaking() {
                 >
                   {isQueueContinue ? <span>Stop Queue</span> : <span>Find a Match</span>}
                 </button>
-                <button className="w-full block rounded-full border border-gray-500 px-8 py-3 text-sm font-medium text-gray-600 hover:bg-gray-500 hover:text-white transition-all">
+                <button
+                  onClick={() => socket.emit('logs:matchRooms')}
+                  className="w-full block rounded-full border border-gray-500 px-8 py-3 text-sm font-medium text-gray-600 hover:bg-gray-500 hover:text-white transition-all"
+                >
                   Private rooms
                 </button>
               </div>
