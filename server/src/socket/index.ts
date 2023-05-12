@@ -1,5 +1,5 @@
 import Matcher from '@/core/matcher';
-import { IMatchRoomUsers, IMatchWatingUser } from '@/interfaces/matcher.interface';
+import { IMatchFounded, IMatchRoomUsers, IMatchWatingUser } from '@/interfaces/matcher.interface';
 import { PrismaClient, User } from '@prisma/client';
 import http from 'http';
 import { Socket, Server as SocketIOServer } from 'socket.io';
@@ -49,13 +49,24 @@ export class ServerSocket {
       email: user.email,
       username: user.username,
       socketId: id,
+      isUserReady: false,
     };
   }
 
-  private matchFounded(users: IMatchRoomUsers[]): void {
+  private matchFounded(result: IMatchFounded, socketId: string): void {
+    const users = result.usersData;
     for (let i = 0; i < users.length; i++) {
-      this.io.to(users[i].socketId).emit('match:founded');
+      if (users[i].socketId === socketId) {
+        console.log('userrr>>', users[i]);
+        result.selfData = users[i];
+      }
+      this.io.to(users[i].socketId).emit('match:founded', result);
     }
+
+    setTimeout(() => {
+      // todo
+      //? Check is match startable
+    }, 10005);
   }
 
   private async queueStart(socket: Socket, email: string): Promise<void> {
@@ -64,14 +75,15 @@ export class ServerSocket {
     this.addQueueId(socket.id);
 
     //? Found match for new queue
-    const result: IMatchWatingUser | IMatchRoomUsers[] = this.matcher.checkMatchRoomForNewQueue(
+    //! BUG: Her zaman son queue onaylayan kullanıcı geliyor!
+    const result: IMatchWatingUser | IMatchFounded = this.matcher.checkMatchRoomForNewQueue(
       user.rank,
       this.generateObjectForMatchRoom(user, socket.id),
     );
-    if ('tierIndex' in result) {
+    if ('usersData' in result) {
+      this.matchFounded(result, socket.id);
+    } else if ('rank' in result) {
       socket.emit('queue:waitingUserData', result);
-    } else if (result.length > 0) {
-      this.matchFounded(result);
     }
   }
 
@@ -83,6 +95,15 @@ export class ServerSocket {
       //? If user leaving and when not founded match remove match room
       this.matcher.removeMatchRoom(data.rank, data.tierIndex);
     }
+  }
+
+  private matchAccepted(socket: Socket, data: IMatchFounded): void {
+    //?
+    console.log('accepted match: ', data.selfData.email);
+  }
+
+  private matchRejected(socket: Socket, data: IMatchFounded): void {
+    console.log('rejected match: ', data.selfData.email);
   }
 
   private connection() {
@@ -100,6 +121,12 @@ export class ServerSocket {
 
       //? Queue Leave Event
       socket.on('queue:leave', this.queueLeave.bind(this, socket));
+
+      //? Match Accepted Event
+      socket.on('match:accepted', this.matchAccepted.bind(this, socket));
+
+      //? Match Rejected Event
+      socket.on('match:rejected', this.matchRejected.bind(this, socket));
 
       //? Match Room logs
       socket.on('logs:matchRooms', () => socket.emit('logs:matchRooms', this.matcher.matchRooms));

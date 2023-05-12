@@ -1,7 +1,10 @@
-import { Inter } from 'next/font/google';
+// Style
 import '../style/global.css';
+
+import { Inter } from 'next/font/google';
 import { Header } from '../components/header';
-import ToastifyProvider from './toastify';
+import ToastifyProvider from '../providers/toastify';
+import { ReduxProvider } from '../providers/redux';
 
 export const metadata = {
   title: 'Keyboards of Warriors',
@@ -18,9 +21,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={inter.className}>
       <body>
-        <Header />
-        <main>{children}</main>
-        <ToastifyProvider />
+        <ReduxProvider>
+          <Header />
+          <main>{children}</main>
+          <ToastifyProvider />
+        </ReduxProvider>
       </body>
     </html>
   );

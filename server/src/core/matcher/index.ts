@@ -1,4 +1,4 @@
-import { IMatchRanks, IMatchRoomUsers, IMatchRooms, IMatchWatingUser } from '@/interfaces/matcher.interface';
+import { IMatchFounded, IMatchRanks, IMatchRoomUsers, IMatchRooms, IMatchWatingUser } from '@/interfaces/matcher.interface';
 import MMR from '../mmr';
 import { User } from '@prisma/client';
 
@@ -17,7 +17,16 @@ export default class Matcher {
     };
   }
 
-  public checkMatchRoomForNewQueue(mmr: number, user: IMatchRoomUsers): IMatchRoomUsers[] | IMatchWatingUser {
+  private generateQueueReadyObject(rank: IMatchRanks, tierIndex: number, user: IMatchRoomUsers): IMatchFounded {
+    return {
+      usersData: this.getUsersData(rank, tierIndex),
+      selfData: user,
+      tierIndex,
+      rank,
+    };
+  }
+
+  public checkMatchRoomForNewQueue(mmr: number, user: IMatchRoomUsers): IMatchFounded | IMatchWatingUser {
     const rank: IMatchRanks = MMR.generateMmrToString(mmr);
 
     const tier = this.matchRooms[rank];
@@ -29,7 +38,7 @@ export default class Matcher {
         const isQueueReady: string = this.checkIsQueueReady(rank, i, user);
         if (isQueueReady === 'ready') {
           //? Get user infos
-          return this.getUsersData(rank, i);
+          return this.generateQueueReadyObject(rank, i, user);
         } else if (isQueueReady === 'reached') {
           //? Force leave for room joined to much user
           this.forceLeaveToRoomUserForReachedUser(rank, i, user);

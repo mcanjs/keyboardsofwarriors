@@ -1,18 +1,32 @@
 'use client';
 
 import { Loader } from '@/src/components/loader';
+import MatchFoundModal from '@/src/components/matchFoundModal';
 import Timer from '@/src/components/timer';
 import { useAuth } from '@/src/hooks/authentication/useAuth';
+import { useAppDispatch, useAppSelector } from '@/src/hooks/redux/hook';
 import { useSocket } from '@/src/hooks/socket/useSocket';
-import { ISocketMatchWatingUserData } from '@/src/interfaces/socket.interfaces';
+import { ISocketMatchFounded, ISocketMatchWatingUserData } from '@/src/interfaces/socket.interfaces';
+import { changeIsMatchFounded, changeIsUserAccepted } from '@/src/redux/features/matchmakingSlice';
 import React, { useEffect, useState } from 'react';
 
 export default function Matchmaking() {
+  //? Hooks
+  const dispatch = useAppDispatch();
   const { auth } = useAuth();
   const socket = useSocket();
+
+  //? States
   const [isQueueContinue, setIsQueContinue] = useState<boolean>(false);
   const [matchWaitingUserData, setMatchWaitingUserData] = useState<undefined | ISocketMatchWatingUserData>(undefined);
+  const [matchFoundedUserData, setMatchFoundedUserData] = useState<undefined | ISocketMatchFounded>(undefined);
+  const [isUserAlreadyAccepted, setIsUserAlreadyAccepted] = useState<boolean>(false);
 
+  //? Store selectors
+  const isMatchFounded = useAppSelector((state) => state.matchmakingReducer.isMatchFounded);
+  const isUserAccepted = useAppSelector((state) => state.matchmakingReducer.isUserAccepted);
+
+  //? Effects
   useEffect(() => {
     function onConnect() {
       console.log('connect');
@@ -20,6 +34,12 @@ export default function Matchmaking() {
 
     function onDisconnect() {
       console.log('disconnect');
+    }
+
+    function onMatchFounded(data: ISocketMatchFounded) {
+      console.log(data);
+      setMatchFoundedUserData(data);
+      dispatch(changeIsMatchFounded(true));
     }
 
     if (typeof socket !== 'undefined' && auth !== null) {
@@ -33,13 +53,21 @@ export default function Matchmaking() {
       socket.on('logs:matchRooms', (data) => console.log(data));
 
       //? Match event listeners
-      socket.on('match:founded', () => console.log('match founded'));
+      socket.on('match:founded', onMatchFounded);
 
       //? Queue event listeners
       socket.on('queue:waitingUserData', (data: ISocketMatchWatingUserData) => setMatchWaitingUserData(data));
     }
   }, [socket, auth]);
 
+  useEffect(() => {
+    if (isMatchFounded && isUserAccepted && typeof matchFoundedUserData !== 'undefined') {
+      socket?.emit('match:accepted', matchFoundedUserData);
+      setIsUserAlreadyAccepted(true);
+    }
+  }, [isMatchFounded, isUserAccepted, matchFoundedUserData]);
+
+  //? Find a Match
   const findMatch = () => {
     if (isQueueContinue) {
       socket?.emit('queue:leave', matchWaitingUserData);
@@ -48,6 +76,22 @@ export default function Matchmaking() {
       socket?.emit('queue:start');
       setIsQueContinue(true);
     }
+  };
+
+  //? On Coundown Modal Ended
+  const onCountdownEnded = () => {
+    if (isUserAccepted) {
+      if (!isUserAlreadyAccepted) socket?.emit('match:accepted', matchFoundedUserData);
+    } else {
+      socket?.emit('match:rejected', matchFoundedUserData);
+
+      //? Change store states
+
+      setMatchWaitingUserData(undefined);
+      setMatchFoundedUserData(undefined);
+    }
+    dispatch(changeIsMatchFounded(false));
+    dispatch(changeIsUserAccepted(false));
   };
 
   return (
@@ -94,6 +138,7 @@ export default function Matchmaking() {
           </>
         )}
       </div>
+      {isMatchFounded && <MatchFoundModal onCountdownEnded={onCountdownEnded} />}
     </div>
   );
 }
