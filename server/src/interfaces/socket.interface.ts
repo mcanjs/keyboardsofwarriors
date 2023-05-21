@@ -5,5 +5,5 @@ export interface ISocketUser {
   lose: number;
   rank: number;
   password: string;
-  queuePosition: string;
+  queueTierIndex: number;
 }

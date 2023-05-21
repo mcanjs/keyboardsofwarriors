@@ -6,7 +6,7 @@ import { SECRET_KEY } from '@config';
 import { CreateUserDto } from '@dtos/users.dto';
 import { HttpException } from '@exceptions/httpException';
 import { DataStoredInToken, TokenData } from '@interfaces/auth.interface';
-import { User } from '@/logs/users.interface';
+import { User } from '@/interfaces/users.interface';
 
 @Service()
 export class AuthService {

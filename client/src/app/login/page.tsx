@@ -4,7 +4,7 @@ import React, { FormEvent, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { RiAtLine, RiEyeLine } from 'react-icons/ri';
 import { Loader } from '@/src/components/loader';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 
 export default function Login() {
   const params = useSearchParams();
@@ -19,15 +19,13 @@ export default function Login() {
       const response = await fetch('/api/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
-      }).then((res) => res);
-
-      if (response.status === 200) {
+      }).then((res) => res.json());
+      if (response.success) {
         const nextUrl = params?.get('next');
         window.location.href = nextUrl || '/';
       } else {
         setIsLoading(false);
-        console.log(response);
-        toast.error(response.statusText);
+        toast.error(response.message);
       }
     }
   };

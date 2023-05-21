@@ -3,7 +3,7 @@ import '../style/global.css';
 
 import { Inter } from 'next/font/google';
 import { Header } from '../components/header';
-import ToastifyProvider from '../providers/toastify';
+import ToastifyProvider from '../providers/toaster';
 import { ReduxProvider } from '../providers/redux';
 
 export const metadata = {
@@ -23,6 +23,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ReduxProvider>
           <Header />
+          <div className="w-full my-[20px] z-[1]">
+            <div className="w-[728px] h-[90px] flex justiy-center items-center bg-gray-400 mx-auto">
+              <h3 className="mx-auto text-white">728x90</h3>
+            </div>
+          </div>
           <main>{children}</main>
           <ToastifyProvider />
         </ReduxProvider>

@@ -20,6 +20,63 @@
   stroke: #4c40f5;
 }
 
+.competitive-screen {
+  width: 100%;
+  height: 100%;
+}
+
+.competitive-loader {
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: black;
+  animation: screenDown 1s ease-in forwards;
+}
+
+.competitive-screen .competitive-loader .sword-animation {
+  width: 75%;
+  height: 75%;
+  opacity: 0;
+  animation: fadeIn 0.5s ease-in forwards;
+  animation-delay: 1s;
+}
+
+.competitive-screen.closing .competitive-loader {
+  animation: screenUp 1s ease-out forwards;
+  animation-delay: 0.5s;
+}
+
+.competitive-screen.closing .competitive-loader .sword-animation {
+  animation: fadeOut 0.5s ease-out forwards;
+}
+
+.game-area .words-loader {
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 @keyframes dash {
   0% {
     stroke-dasharray: 0, 150;
@@ -32,5 +89,29 @@
   100% {
     stroke-dasharray: 0, 150;
     stroke-dashoffset: -124;
+  }
+}
+
+@keyframes screenDown {
+  0% {
+    height: 0%;
+  }
+  70% {
+    height: 100%;
+  }
+  82% {
+    height: 90%;
+  }
+  100% {
+    height: 100%;
+  }
+}
+
+@keyframes screenUp {
+  from {
+    height: 100%;
+  }
+  to {
+    height: 0%;
   }
 }

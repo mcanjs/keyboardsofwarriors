@@ -13,16 +13,28 @@ export interface ISocketMatchWatingUserData {
   rank: ISocketMatchRanks;
 }
 
-export interface ISocketMatchRoomUsers {
+export interface ISocketMatchRoomUser {
   email: string;
   username: string;
   socketId: string;
   isUserReady: boolean;
+  isUserJoinedToRoom: boolean;
 }
 
 export interface ISocketMatchFounded {
-  usersData: ISocketMatchRoomUsers[];
-  selfData: ISocketMatchRoomUsers;
+  usersData: ISocketMatchRoomUser[];
+  selfData: ISocketMatchRoomUser;
   tierIndex: number;
   rank: ISocketMatchRanks;
+}
+
+export interface ISocketCompetitiveCreated {
+  rank: ISocketMatchRanks;
+  competitiveId: string;
+  competitiveTierIndex: number;
+}
+
+export interface ISocketCompetitiveUserConnected {
+  rank: ISocketMatchRanks;
+  competitiveTierIndex: number;
 }

@@ -3,7 +3,7 @@ import { hash } from 'bcrypt';
 import { Service } from 'typedi';
 import { CreateUserDto } from '@dtos/users.dto';
 import { HttpException } from '@/exceptions/httpException';
-import { User } from '@/logs/users.interface';
+import { User } from '@/interfaces/users.interface';
 
 @Service()
 export class UserService {
@@ -28,7 +28,7 @@ export class UserService {
 
     const hashedPassword = await hash(userData.password, 10);
     const createUserData: User = await this.user.create({
-      data: { ...userData, password: hashedPassword, matchmaking: { win: '0', lose: '0', rank: '0' }, queuePosition: '', matchPosition: '' },
+      data: { ...userData, password: hashedPassword, matchmaking: { win: '0', lose: '0', rank: '0' }, queueTierIndex: -1, matchPosition: '' },
     });
     return createUserData;
   }

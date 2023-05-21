@@ -20,7 +20,6 @@ export const useSocket = () => {
       //? Update Socket for state
       setSocket(socketIo);
     }
-
     return cleanUp;
   }, [typeof socket === 'undefined', auth !== null]);
 

@@ -5,8 +5,8 @@ import React, { useEffect, useState } from 'react';
 
 export default function MatchFoundModal(props: IMatchFoundedModalProps) {
   //? Props
-  const {onCountdownEnded} = props;
-  
+  const { onCountdownEnded } = props;
+
   //? Hooks
   const dispatch = useAppDispatch();
 
@@ -54,7 +54,7 @@ export default function MatchFoundModal(props: IMatchFoundedModalProps) {
             </span>
           </span>
         </div>
-        <div className="mt-4 flex gap-2">
+        <div className="mt-4 flex">
           <button
             type="button"
             className="rounded-full mx-auto bg-green-400 px-4 py-2 text-sm font-medium text-white disabled:bg-green-50 transition-all"
