@@ -28,7 +28,7 @@ model User {
   rank          Int
   password      String
   queueTierIndex Int
-  matchPosition String
+  competitiveTierIndex Int
   isUserInApproval Boolean
   queueBan String
 }

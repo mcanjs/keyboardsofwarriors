@@ -93,6 +93,15 @@ export default class Matcher {
     }
   }
 
+  public removeMatchRoomForCompetitiveStarted(rank: IMatchRanks, tierIndex: number): boolean {
+    if (this.matchRooms[rank][tierIndex]) {
+      this.matchRooms[rank].splice(tierIndex, 1);
+      return true;
+    }
+
+    return false;
+  }
+
   public checkIsMatchStartable(rank: IMatchRanks, tierIndex: number): IMatchStartableInformation {
     const startableInformation: IMatchStartableInformation = generateObjectForMatchStartableInformation(rank, tierIndex);
     const relatedRooms = this.matchRooms[rank][tierIndex];

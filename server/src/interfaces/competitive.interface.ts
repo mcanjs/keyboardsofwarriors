@@ -29,3 +29,24 @@ export interface ICompetitiveRooms {
   grandMaster: ICompetitiveRoom[];
   challenger: ICompetitiveRoom[];
 }
+
+export interface ICompetitiveSetUserReady {
+  willBeNotifySocketId: string;
+}
+
+export interface ICompetitiveCheckUserReady {
+  socketIds: string[];
+  isUsersReady: boolean;
+  words: string[];
+  opponentSocketId: string;
+}
+
+export interface ICompetitiveCorrectNotify {
+  opponentSocketId: string;
+  totalCorrect: number;
+}
+
+export interface ICompetitiveGetOpponent {
+  socketId: string;
+  email: string;
+}

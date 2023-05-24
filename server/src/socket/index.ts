@@ -7,7 +7,14 @@ import {
 } from '@/core/generators/object.generator';
 import { generateEnglishWords } from '@/core/generators/words.generator';
 import Matcher from '@/core/matcher';
-import { ICompetitiveCreating, ICompetitiveRoom, ICompetitiveUserConnected } from '@/interfaces/competitive.interface';
+import MMR from '@/core/mmr';
+import {
+  ICompetitiveCorrectNotify,
+  ICompetitiveCreating,
+  ICompetitiveGetOpponent,
+  ICompetitiveRoom,
+  ICompetitiveUserConnected,
+} from '@/interfaces/competitive.interface';
 import {
   IMatchFounded,
   IMatchRanks,
@@ -90,7 +97,54 @@ export class ServerSocket {
       });
     }
 
+    if (user.competitiveTierIndex > -1) {
+      const rank: IMatchRanks = MMR.generateMmrToString(user.rank);
+      const competitiveTierIndex = user.competitiveTierIndex;
+      await this.prisma.user.update({
+        where: {
+          email,
+        },
+        data: {
+          competitiveTierIndex: -1,
+        },
+      });
+      this.notifyOpponentWhenLeftUser(user.email, rank, competitiveTierIndex);
+    }
+
     return user;
+  }
+
+  private async updateDatabaseForKickUserFromCompetitive(email: string): Promise<User> {
+    return await this.prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        competitiveTierIndex: -1,
+      },
+    });
+  }
+
+  private async notifyOpponentWhenLeftUser(email: string, rank: IMatchRanks, competitiveTierIndex: number): Promise<void> {
+    const opponent: ICompetitiveGetOpponent | undefined = this.competitive.getOpponent(email, rank, competitiveTierIndex);
+
+    if (typeof opponent !== 'undefined') {
+      await this.updateDatabaseForKickUserFromCompetitive(opponent.email);
+      this.io.sockets.sockets.get(opponent.socketId).emit('competitive:opponentLeft');
+      //TODO: Left user lose rank
+    }
+  }
+
+  private async updateDatabaseForJoinedUserCompetitive(email: string, competitiveTierIndex: number): Promise<User> {
+    return await this.prisma.user.update({
+      where: {
+        email,
+      },
+      data: {
+        queueTierIndex: -1,
+        competitiveTierIndex,
+      },
+    });
   }
 
   private acceptedUserGiveInfoForRejectedUser(acceptersSocketIds: string[], rejectersSocketIds: string[]) {
@@ -100,8 +154,13 @@ export class ServerSocket {
     }
   }
 
-  private createSocketRoom(socket: Socket, rank: IMatchRanks, roomData: ICompetitiveRoom, competitiveTierIndex: number): void {
+  private deleteMatcherRoomWhenCompetitiveCreated(rank: IMatchRanks, tierIndex: number) {
+    this.matcher.removeMatchRoomForCompetitiveStarted(rank, tierIndex);
+  }
+
+  private async createSocketRoom(socket: Socket, rank: IMatchRanks, roomData: ICompetitiveRoom, competitiveTierIndex: number): Promise<void> {
     socket.join(roomData.competitiveId);
+    await this.updateDatabaseForJoinedUserCompetitive(socket.handshake.query.email as string, competitiveTierIndex);
     socket.emit('competitive:created', { rank, roomId: roomData.competitiveId, competitiveTierIndex });
   }
 
@@ -118,6 +177,8 @@ export class ServerSocket {
       //? Give info for competitive creating
       socket.emit('competitive:creating', user);
 
+      //? Delete matcher room when competitive started
+      this.deleteMatcherRoomWhenCompetitiveCreated(rank, tierIndex);
       //? Create room for new competitive
       this.createSocketRoom(socket, rank, roomData, competitiveTierIndex);
     }
@@ -196,6 +257,11 @@ export class ServerSocket {
     this.matcher.kickDisconnectedUser(user.rank, user.queueTierIndex, email);
   }
 
+  private competitiveCorrectNotify(data: ICompetitiveCorrectNotify) {
+    const { opponentSocketId, totalCorrect } = data;
+    this.io.sockets.sockets.get(opponentSocketId).emit('competitive:opponentCorrect', totalCorrect);
+  }
+
   private competitiveUserConnected(socketId: string, data: ICompetitiveUserConnected): void {
     //? Set ready user and return will be notify socket id
     const { willBeNotifySocketId } = this.competitive.setUserReady(data.rank, data.competitiveTierIndex, socketId);
@@ -203,12 +269,13 @@ export class ServerSocket {
     this.io.sockets.sockets.get(willBeNotifySocketId).emit('competitive:opponentReady');
 
     //? Check is competitive ready
-    const { socketIds, isUsersReady, words } = this.competitive.checkIsUsersReady(data.rank, data.competitiveTierIndex);
+    const { socketIds, isUsersReady, words, opponentSocketId } = this.competitive.checkIsUsersReady(data.rank, data.competitiveTierIndex, socketId);
 
     if (isUsersReady) {
       for (let i = 0; i < socketIds.length; i++) {
         this.io.sockets.sockets.get(socketIds[i]).emit('competitive:words', words);
       }
+      this.io.sockets.sockets.get(socketId).emit('competitive:opponentId', opponentSocketId);
     }
   }
 
@@ -241,6 +308,9 @@ export class ServerSocket {
 
       //? Competitive User Connected Event
       socket.on('competitive:userConnected', this.competitiveUserConnected.bind(this, socket.id));
+
+      //? Competitive Opponent Correct Event
+      socket.on('competitive:correctNotify', this.competitiveCorrectNotify.bind(this));
     });
   }
 

@@ -1,6 +1,6 @@
 import CompetitiveLoaderAnimations from './animation';
 import CompetitiveLoaderSteps from './steps';
-import '@lottiefiles/lottie-player';
+if (typeof window !== 'undefined') import('@lottiefiles/lottie-player');
 
 interface IProps {
   step: number;

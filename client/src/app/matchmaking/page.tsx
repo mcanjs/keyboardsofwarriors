@@ -1,7 +1,7 @@
 'use client';
 
 import { Loader } from '@/src/components/loader';
-import MatchFoundModal from '@/src/components/matchFoundedModal';
+import MatchFoundModal from '@/src/components/modals/matchFoundedModal';
 import Timer from '@/src/components/timer';
 import { useAuth } from '@/src/hooks/authentication/useAuth';
 import { useAppDispatch, useAppSelector } from '@/src/hooks/redux/hook';
@@ -15,7 +15,7 @@ import {
 } from '@/src/interfaces/socket.interfaces';
 import { changeIsMatchFounded, changeIsUserAccepted } from '@/src/redux/features/matchmakingSlice';
 import React, { useEffect, useState } from 'react';
-import '@lottiefiles/lottie-player';
+if (typeof window !== 'undefined') import('@lottiefiles/lottie-player');
 import Competitive from '@/src/components/competitive';
 import { toast } from 'react-hot-toast';
 
@@ -108,6 +108,20 @@ export default function Matchmaking() {
       //? Loader event listeners
       socket.on('loader:leftFromQueue', onLoaderLeaveFromQueue);
     }
+
+    return () => {
+      if (typeof socket !== 'undefined') {
+        socket.off('connect', onConnect);
+        socket.off('disconnect', onDisconnect);
+        socket.off('logs:matchRooms', (data) => console.log(data));
+        socket.off('match:founded', onMatchFounded);
+        socket.off('match:opponentRejected', onMatchOpponentRejected);
+        socket.off('competitive:creating', onCompetitiveCreating);
+        socket.off('competitive:created', onCompetitiveCreated);
+        socket.off('queue:waitingUserData', (data: ISocketMatchWatingUserData) => setMatchWaitingUserData(data));
+        socket.off('loader:leftFromQueue', onLoaderLeaveFromQueue);
+      }
+    };
   }, [socket, auth]);
 
   useEffect(() => {
@@ -115,6 +129,10 @@ export default function Matchmaking() {
       socket?.emit('match:accepted', matchFoundedUserData);
       setIsUserAlreadyAccepted(true);
     }
+
+    return () => {
+      setIsUserAlreadyAccepted(false);
+    };
   }, [isMatchFounded, isUserAccepted, matchFoundedUserData]);
 
   //? Find a Match
