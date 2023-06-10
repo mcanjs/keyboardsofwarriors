@@ -1,17 +1,17 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export interface IMatchmakingStore {
+export interface IMatchmakerStore {
   isMatchFounded: boolean;
   isUserAccepted: boolean;
 }
 
-const initialState: IMatchmakingStore = {
+const initialState: IMatchmakerStore = {
   isMatchFounded: false,
   isUserAccepted: false,
 };
 
-export const matchmakingSlice = createSlice({
-  name: 'matchmaking',
+export const slice = createSlice({
+  name: 'matchmaker',
   initialState,
   reducers: {
     changeIsMatchFounded(state, action: PayloadAction<boolean>) {
@@ -23,5 +23,5 @@ export const matchmakingSlice = createSlice({
   },
 });
 
-export const { changeIsMatchFounded, changeIsUserAccepted } = matchmakingSlice.actions;
-export default matchmakingSlice.reducer;
+export const { changeIsMatchFounded, changeIsUserAccepted } = slice.actions;
+export default slice.reducer;

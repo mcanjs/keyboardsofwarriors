@@ -12,15 +12,12 @@ model Matches {
 }
 
 model User {
-  id                   String  @id @default(auto()) @map("_id") @db.ObjectId
-  competitiveTierIndex BigInt
-  email                String  @unique
-  isUserInApproval     Boolean
-  lose                 BigInt
-  password             String
-  queueBan             String
-  queueTierIndex       BigInt
-  rank                 BigInt
-  username             String  @unique
-  win                  BigInt
+  id               String  @id @default(auto()) @map("_id") @db.ObjectId
+  email            String  @unique
+  lose             BigInt
+  password         String
+  queueBan         String
+  rank             BigInt
+  username         String  @unique
+  win              BigInt
 }

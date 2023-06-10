@@ -1,91 +1,70 @@
 'use client';
 
-import React from 'react';
 import { useAuth } from '@/src/hooks/authentication/useAuth';
-import { RiLoginBoxLine, RiLogoutBoxRLine, RiNotification2Line } from 'react-icons/ri';
-import { Loader } from '../loader';
 import Link from 'next/link';
-import Image from 'next/image';
-import Cookies from 'universal-cookie';
+import { Loader } from '../loader';
 
-export function Header() {
-  const { auth, isLoading } = useAuth();
+export default function Header() {
+  const { isLoading, auth } = useAuth();
 
-  const logout = () => {
-    const cookies = new Cookies();
-    cookies.remove('token');
-    window.location.href = '/';
-  };
   return (
-    <header aria-label="Page Header" className="bg-gray-50">
-      <div className="mx-auto max-w-screen-xl px-4 py-4 sm:px-6 lg:px-8">
-        <div className="flex items-center sm:justify-between sm:gap-4">
-          <div className="relative hidden sm:block">
-            <Link href="/" className="block w-[164px] h-[72px]">
-              <Image src="/logo.png" fill alt="" />
-            </Link>
-          </div>
-
-          <div className="flex flex-1 items-center justify-between gap-8 sm:justify-end">
-            <div className="flex gap-4">
-              <button
-                type="button"
-                className="block shrink-0 rounded-lg bg-white p-2.5 text-gray-600 shadow-sm hover:text-gray-700 sm:hidden"
-              >
-                <span className="sr-only">Search</span>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </button>
-              {auth !== null && (
-                <Link
-                  href="/matchmaking"
-                  className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 bg-white px-5 py-3 text-gray-500 transition hover:text-gray-700 focus:outline-none focus:ring"
-                  type="button"
-                >
-                  <span className="text-sm font-medium">Matchmaking</span>
+    <div className="navbar bg-base-200 flex-wrap md:flex-nowrap md:flex-row gap-1 p-0">
+      <div className="container mx-auto">
+        <div
+          className={`flex flex-1 basis-1/6 justify-center ${
+            !isLoading && auth ? 'md:basis-1/3' : 'md:basis-2/3'
+          } md:justify-start p-3`}
+        >
+          <Link href="/" className="mr-auto text-sm">
+            Keyboards of Warriors
+          </Link>
+        </div>
+        {!isLoading && auth && (
+          <div className="flex-1 hidden md:flex md:basis-1/3 p-3">
+            <div className="mx-auto">
+              <div className="login-flow">
+                <Link href="/matchmaker" className="btn btn-accent">
+                  OYNA
                 </Link>
-              )}
-
-              <button
-                type="button"
-                className="block shrink-0 rounded-lg bg-white p-2.5 text-gray-600 shadow-sm hover:text-gray-700"
-              >
-                <span className="sr-only">Notifications</span>
-                <RiNotification2Line />
-              </button>
-              {isLoading && (
-                <div className="flex items-center shrink-0 rounded-lg bg-white p-2.5 text-gray-600 shadow-sm hover:text-gray-700">
-                  <Loader className="!w-[16px] !h-[16px]" />
-                </div>
-              )}
-              {!isLoading && auth !== null && (
-                <button
-                  onClick={logout}
-                  className="flex items-center shrink-0 rounded-lg bg-white p-2.5 text-gray-600 shadow-sm hover:text-gray-700"
-                >
-                  <RiLogoutBoxRLine />
-                </button>
-              )}
-              {!isLoading && auth === null && (
-                <Link
-                  href="/login"
-                  className="flex items-center shrink-0 rounded-lg bg-white p-2.5 text-gray-600 shadow-sm hover:text-gray-700"
-                >
-                  <RiLoginBoxLine />
-                </Link>
-              )}
+              </div>
             </div>
           </div>
+        )}
+        <div
+          className={`flex flex-1 basis-1/6 ${
+            !isLoading && auth ? 'md:basis-1/3' : 'md:basis-2/3 justify-center'
+          } md:justify-end p-3`}
+        >
+          {isLoading && <Loader className="ml-auto loading-lg" />}
+          {!isLoading && auth && (
+            <div className="dropdown dropdown-end ml-auto">
+              <label tabIndex={0} className="avatar placeholder cursor-pointer">
+                <div className="bg-base-300 rounded-full w-[40px] h-[40px]">
+                  <span>{(auth.email as string).charAt(0).toLocaleUpperCase()}</span>
+                </div>
+              </label>
+              <ul tabIndex={0} className="menu dropdown-content p-2 shadow bg-base-200 rounded-box w-52 mt-4">
+                <li>
+                  <Link href="/">Profil</Link>
+                </li>
+                <li>
+                  <Link href="/">Çıkış Yap</Link>
+                </li>
+              </ul>
+            </div>
+          )}
+          {!isLoading && !auth && (
+            <ul className="menu menu-horizontal">
+              <li>
+                <Link href="/login">Login</Link>
+              </li>
+              <li>
+                <Link href="/signup">Signup</Link>
+              </li>
+            </ul>
+          )}
         </div>
       </div>
-    </header>
+    </div>
   );
 }

@@ -1,11 +1,11 @@
 import { configureStore } from '@reduxjs/toolkit';
 
 // Reducers
-import matchmakingReducer from './features/matchmakingSlice';
+import matchmakerReducer from './features/matchmaker/matchmaker.slice';
 
 export const store = configureStore({
   reducer: {
-    matchmakingReducer,
+    matchmakerReducer,
   },
   devTools: process.env.NODE_ENV !== 'production',
 });

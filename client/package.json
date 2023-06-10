@@ -12,7 +12,6 @@
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} seed.ts"
   },
   "dependencies": {
-    "@lottiefiles/lottie-player": "^1.7.1",
     "@prisma/client": "^4.12.0",
     "@reduxjs/toolkit": "^1.9.5",
     "@types/react": "18.0.31",
@@ -24,6 +23,7 @@
     "eslint": "8.37.0",
     "eslint-config-next": "13.2.4",
     "jose": "^4.14.4",
+    "lottie-react": "^2.4.0",
     "next": "13.2.4",
     "polished": "^4.2.2",
     "postcss-nesting": "^11.2.2",
@@ -31,7 +31,7 @@
     "react-dom": "18.2.0",
     "react-google-recaptcha": "^2.1.0",
     "react-hot-toast": "^2.4.1",
-    "react-icons": "^4.8.0",
+    "react-icons": "^4.9.0",
     "react-redux": "^8.0.5",
     "socket.io-client": "^4.6.1",
     "universal-cookie": "^4.0.4",
@@ -43,6 +43,7 @@
     "@types/node": "^18.15.11",
     "@types/react-google-recaptcha": "^2.1.5",
     "autoprefixer": "^10.4.14",
+    "daisyui": "^3.0.5",
     "mongodb": "^4.15.0",
     "postcss": "^8.4.23",
     "postcss-import": "^15.1.0",
