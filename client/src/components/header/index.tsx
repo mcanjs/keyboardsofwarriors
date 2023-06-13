@@ -8,7 +8,7 @@ export default function Header() {
   const { isLoading, auth } = useAuth();
 
   return (
-    <div className="navbar bg-base-200 flex-wrap md:flex-nowrap md:flex-row gap-1 p-0">
+    <div className="navbar h-[80px] bg-base-200 flex-wrap md:flex-nowrap md:flex-row gap-1 p-0">
       <div className="container mx-auto">
         <div
           className={`flex flex-1 basis-1/6 justify-center ${
@@ -23,8 +23,8 @@ export default function Header() {
           <div className="flex-1 hidden md:flex md:basis-1/3 p-3">
             <div className="mx-auto">
               <div className="login-flow">
-                <Link href="/matchmaker" className="btn btn-accent">
-                  OYNA
+                <Link href="/matchmaker" className="btn bg-indigo-600 hover:bg-indigo-500">
+                  PLAY
                 </Link>
               </div>
             </div>

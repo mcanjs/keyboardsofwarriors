@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html data-theme="dark" lang="en" className={inter.className}>
       <body className="min-h-screen flex flex-col">
         <ReduxProvider>
-          <Header />
+            <Header />
           <main className="flex flex-1 flex-col">{children}</main>
           <Footer />
         </ReduxProvider>

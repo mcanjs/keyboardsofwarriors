@@ -1,3 +1,4 @@
+import { GenerateWord } from '@/core/generators/word.generator';
 import { PrismaClient } from '@prisma/client';
 import http from 'http';
 import { Socket, Server as SocketIOServer } from 'socket.io';

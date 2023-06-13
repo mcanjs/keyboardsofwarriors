@@ -5,6 +5,8 @@ import { useAppDispatch, useAppSelector } from '@/src/hooks/redux/hook';
 import { useSocket } from '@/src/hooks/socket/useSocket';
 import React, { useEffect, useState } from 'react';
 import { IoArrowForwardOutline } from 'react-icons/io5';
+import GeneralCountdown from '@/src/components/game/countdown/general.countdown';
+import GeneralTimer from '@/src/components/game/timer/general.timer';
 
 export default function Matchmaking() {
   //? Hooks
@@ -57,10 +59,8 @@ export default function Matchmaking() {
             <span>mcann</span>
           </span>
           <span>
-            <select className="select select-sm select-ghost select-bordered w-full max-w-xs">
-              <option selected value="en">
-                English
-              </option>
+            <select defaultValue="en" className="select select-sm select-ghost select-bordered w-full max-w-xs">
+              <option value="en">English</option>
               <option value="tr">Turkish</option>
             </select>
           </span>
@@ -68,7 +68,7 @@ export default function Matchmaking() {
 
         <div className="px-6 py-5">
           <div className="mt-4 space-y-2">
-            <div className="group w-full relative inline-flex justify-center items-center overflow-hidden rounded-full bg-cyan-700 transition-all px-8 py-3 text-white cursor-pointer focus:outline-none focus:ring active:bg-cyan-500">
+            <div className="group w-full relative inline-flex justify-center items-center overflow-hidden rounded-full bg-indigo-600 transition-all px-8 py-3 text-white cursor-pointer focus:outline-none focus:ring active:bg-indigo-500">
               <span className="absolute -start-full transition-all group-hover:start-4">
                 <IoArrowForwardOutline />
               </span>
@@ -92,7 +92,7 @@ export default function Matchmaking() {
 
         <div className="flex justify-center gap-4 border-t border-gray-100 px-6 py-5">
           <span className="font-mono">
-            <span>00</span>
+            <GeneralTimer />
           </span>
         </div>
       </div>

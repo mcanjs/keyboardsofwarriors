@@ -38,7 +38,7 @@ export default function ResultPage() {
             className="block w-full rounded bg-blue-500 px-12 py-3 transition-all text-sm font-medium text-white shadow hover:bg-blue-600 focus:outline-none focus:ring active:bg-blue-400 sm:w-auto"
             href="/matchmaker"
           >
-            Tekrar Oyna
+            Re-play
           </Link>
         </div>
       </div>
