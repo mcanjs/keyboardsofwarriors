@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 export default function GeneralTimer() {
-  const [time, setTime] = useState<number>(110);
+  const [time, setTime] = useState<number>(0);
 
   useEffect(() => {
     const timer = setInterval(() => setTime((old) => old + 1), 1000);

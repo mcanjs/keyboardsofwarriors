@@ -1,7 +1,8 @@
 'use client';
 import React, { KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { words as fakeWords } from '@/src/json/fake/word.json';
-import CompetitiveStat from '../stats/competitive.stats';
+import CompetitiveStat from '../stats/game.stats';
+import GeneralCountdown from '../countdown/general.countdown';
 
 export default function CompetitiveGameScreen() {
   //? Game states
@@ -23,14 +24,17 @@ export default function CompetitiveGameScreen() {
   //? Input onkeydown event
   const checkWord = (e: KeyboardEvent): void => {
     if (!isGameStarted) return;
-    const regexp = /^\S*$/;
+
     const isPressedSpace = e.key === ' ';
     const target = e.target as HTMLInputElement;
 
     if (isPressedSpace && inputRef.current !== null) {
+      console.log('Target :', target.value.substring(0, target.value.length - 1));
+      console.log('Word :', wordRef.current[activeWord].innerText);
+
       checkRow();
       removeActiveWordClassList();
-      if (wordRef.current[activeWord].innerText === target.value.substring(0, target.value.length - 1)) {
+      if (wordRef.current[activeWord].innerText === target.value.split(' ')[0]) {
         wordRef.current[activeWord].classList.add('bg-green-600');
         setCorrectWord((old) => old + 1);
       } else {
@@ -74,9 +78,16 @@ export default function CompetitiveGameScreen() {
     setWords(fakeWords);
   }, []);
 
+  const onCountdownEnded = () => {
+
+  }
+
   return (
     <div className={!isGameStarted ? 'relative blur select-none' : ''}>
       <CompetitiveStat correct={correctWord} incorrect={incorrectWord} />
+      <div className="border-t border-gray-800 p-3">
+        <GeneralCountdown seconds={60} withProgressBar onCountdownEnded={onCountdownEnded} />
+      </div>
       <div>
         <div className="max-h-[255px] overflow-hidden p-5 mb-4">
           <div ref={wordContainerRef} className="flex flex-wrap">

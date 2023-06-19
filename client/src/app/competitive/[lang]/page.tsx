@@ -5,14 +5,23 @@ import { useAppDispatch, useAppSelector } from '@/src/hooks/redux/hook';
 import { useSocket } from '@/src/hooks/socket/useSocket';
 import React, { useEffect, useState } from 'react';
 import { IoArrowForwardOutline } from 'react-icons/io5';
-import GeneralCountdown from '@/src/components/game/countdown/general.countdown';
-import GeneralTimer from '@/src/components/game/timer/general.timer';
+import GeneralTimer from '@/src/components/timer/general.timer';
+import { usePathname, useRouter } from 'next/navigation';
+import { setTimeout } from 'timers';
+import CompetitiveFoundedModal from '@/src/components/modals/competitive/founded.modal';
+import { changeIsMatchFounded, changeIsUserAccepted } from '@/src/redux/features/matchmaker/matchmaker.slice';
 
 export default function Matchmaking() {
   //? Hooks
   const dispatch = useAppDispatch();
   const { auth } = useAuth();
   const socket = useSocket();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  //? Queue states
+  const [isQueueContinue, setIsQueueContinue] = useState<boolean>(false);
+  const [isQueueProtocolLoading, setIsQueueProtocolLoading] = useState<boolean>(false);
 
   //? Store selectors
   const isMatchFounded = useAppSelector((state) => state.matchmakerReducer.isMatchFounded);
@@ -44,6 +53,28 @@ export default function Matchmaking() {
     };
   }, [socket, auth]);
 
+  const findMatch = () => {
+    if (isQueueProtocolLoading) return;
+
+    setIsQueueContinue((old) => !old);
+  };
+
+  const onChangeLang = (lang: string) => {
+    router.push(`/competitive/${lang}`);
+  };
+
+  const onEndedCountdown = () => {
+    if (isUserAccepted) {
+      //? Accepted
+      console.log('accepted');
+    } else {
+      //? Rejected
+      console.log('rejected');
+    }
+    dispatch(changeIsMatchFounded(false));
+    dispatch(changeIsUserAccepted(false));
+  };
+
   return (
     <div className="w-full flex-1 flex flex-col justify-center items-center">
       <div className="max-w-lg w-full rounded-lg border bg-base-200 border-gray-300 text-center shadow-xl">
@@ -59,7 +90,11 @@ export default function Matchmaking() {
             <span>mcann</span>
           </span>
           <span>
-            <select defaultValue="en" className="select select-sm select-ghost select-bordered w-full max-w-xs">
+            <select
+              defaultValue={pathname.split('/')[pathname.split('/').length - 1]}
+              className="select select-sm select-ghost select-bordered w-full max-w-xs"
+              onChange={(e) => onChangeLang(e.currentTarget.value)}
+            >
               <option value="en">English</option>
               <option value="tr">Turkish</option>
             </select>
@@ -68,12 +103,24 @@ export default function Matchmaking() {
 
         <div className="px-6 py-5">
           <div className="mt-4 space-y-2">
-            <div className="group w-full relative inline-flex justify-center items-center overflow-hidden rounded-full bg-indigo-600 transition-all px-8 py-3 text-white cursor-pointer focus:outline-none focus:ring active:bg-indigo-500">
-              <span className="absolute -start-full transition-all group-hover:start-4">
-                <IoArrowForwardOutline />
-              </span>
+            <div
+              onClick={findMatch}
+              className={`${
+                isQueueContinue ? 'bg-red-600 active:bg-red-500' : 'bg-indigo-600 active:bg-indigo-500'
+              } group w-full 
+              relative inline-flex justify-center items-center overflow-hidden rounded-full  transition-all px-8 py-3 text-white cursor-pointer focus:outline-none focus:ring 
+              `}
+            >
+              <span className={`${isQueueProtocolLoading ? 'block' : 'hidden'} loading loading-ring loading-sm`}></span>
+              <div className={`${!isQueueProtocolLoading ? 'flex' : 'hidden'} items-center`}>
+                <span className="absolute -start-full transition-all group-hover:start-4">
+                  <IoArrowForwardOutline className={`${isQueueContinue ? 'rotate-180' : ''} transition-all`} />
+                </span>
 
-              <span className="text-sm font-medium transition-all select-none group-hover:ms-4">Find a Match</span>
+                <span className="text-sm font-medium transition-all select-none group-hover:ms-4">
+                  {isQueueContinue ? 'Leave to Queue' : 'Find a Match'}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -92,10 +139,11 @@ export default function Matchmaking() {
 
         <div className="flex justify-center gap-4 border-t border-gray-100 px-6 py-5">
           <span className="font-mono">
-            <GeneralTimer />
+            {isQueueContinue && !isQueueProtocolLoading ? <GeneralTimer /> : <div className="p-3"></div>}
           </span>
         </div>
       </div>
+      {isMatchFounded && <CompetitiveFoundedModal seconds={10} onEndedCountdown={onEndedCountdown} />}
     </div>
   );
 }

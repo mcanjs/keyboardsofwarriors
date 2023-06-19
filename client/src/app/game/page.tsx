@@ -1,4 +1,4 @@
-import CompetitiveGameScreen from '@/src/components/game/screen/competitive.screen';
+import CompetitiveGameScreen from '@/src/components/screen/game.screen';
 
 export default function Game() {
   return (

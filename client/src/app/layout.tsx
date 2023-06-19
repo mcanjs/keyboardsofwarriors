@@ -6,6 +6,7 @@ import ToastifyProvider from '../providers/toaster';
 import { ReduxProvider } from '../providers/redux';
 import Header from '../components/header';
 import Footer from '../components/footer';
+import Sounder from '../components/sounder';
 
 export const metadata = {
   title: 'Keyboards of Warriors',
@@ -23,9 +24,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html data-theme="dark" lang="en" className={inter.className}>
       <body className="min-h-screen flex flex-col">
         <ReduxProvider>
-            <Header />
+          <Header />
           <main className="flex flex-1 flex-col">{children}</main>
           <Footer />
+          <Sounder />
         </ReduxProvider>
         <ToastifyProvider />
       </body>
