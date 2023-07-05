@@ -3,7 +3,7 @@ import { hash } from 'bcrypt';
 import { Service } from 'typedi';
 import { CreateUserDto } from '@dtos/users.dto';
 import { HttpException } from '@/exceptions/httpException';
-import { User } from '@/interfaces/users.interface';
+import { User } from '@interfaces/users.interface';
 
 @Service()
 export class UserService {
@@ -14,8 +14,7 @@ export class UserService {
     return allUser;
   }
 
-  public async findUserById(userId: string): Promise<User> {
-    console.log(userId);
+  public async findUserById(userId: number): Promise<User> {
     const findUser: User = await this.user.findUnique({ where: { id: userId } });
     if (!findUser) throw new HttpException(409, "User doesn't exist");
 
@@ -27,13 +26,11 @@ export class UserService {
     if (findUser) throw new HttpException(409, `This email ${userData.email} already exists`);
 
     const hashedPassword = await hash(userData.password, 10);
-    const createUserData: User = await this.user.create({
-      data: { ...userData, password: hashedPassword, matchmaking: { win: '0', lose: '0', rank: '0' }, queueTierIndex: -1, matchPosition: '' },
-    });
+    const createUserData: User = await this.user.create({ data: { ...userData, password: hashedPassword } });
     return createUserData;
   }
 
-  public async updateUser(userId: string, userData: CreateUserDto): Promise<User> {
+  public async updateUser(userId: number, userData: CreateUserDto): Promise<User> {
     const findUser: User = await this.user.findUnique({ where: { id: userId } });
     if (!findUser) throw new HttpException(409, "User doesn't exist");
 
@@ -42,7 +39,7 @@ export class UserService {
     return updateUserData;
   }
 
-  public async deleteUser(userId: string): Promise<User> {
+  public async deleteUser(userId: number): Promise<User> {
     const findUser: User = await this.user.findUnique({ where: { id: userId } });
     if (!findUser) throw new HttpException(409, "User doesn't exist");
 

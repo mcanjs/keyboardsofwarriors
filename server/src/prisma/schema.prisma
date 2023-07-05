@@ -10,22 +10,13 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Matches {
-  id           String  @id @default(auto()) @map("_id") @db.ObjectId
-  matchDate    String?
-  winnedUserId String?
-  user1Id      String? @db.ObjectId
-  user2Id      String? @db.ObjectId
-  roomId       String?
-}
-
 model User {
-  id            String @id @default(auto()) @map("_id") @db.ObjectId
-  email         String @unique
-  username      String @unique
-  win           Int
-  lose          Int
-  rank          Int
-  password      String
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  email    String @unique
+  username String @unique
+  win      Int
+  lose     Int
+  rank     Int
+  password String
   queueBan String
 }

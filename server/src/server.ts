@@ -7,6 +7,7 @@ import { ServerSocket } from './socket';
 ValidateEnv();
 
 const app = new App([new UserRoute(), new AuthRoute()]);
-const socket = new ServerSocket(app.getServer());
+const socket = new ServerSocket(app);
 
+app.listen();
 socket.listen();

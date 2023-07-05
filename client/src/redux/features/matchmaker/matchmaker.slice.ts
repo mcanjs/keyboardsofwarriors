@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface IMatchmakerStore {
   isMatchFounded: boolean;
@@ -11,7 +11,7 @@ const initialState: IMatchmakerStore = {
 };
 
 export const slice = createSlice({
-  name: 'matchmaker',
+  name: "matchmaker",
   initialState,
   reducers: {
     changeIsMatchFounded(state, action: PayloadAction<boolean>) {
