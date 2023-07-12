@@ -1,8 +1,8 @@
 "use client";
 import React, { KeyboardEvent, useEffect, useRef, useState } from "react";
 import { words as fakeWords } from "@/src/json/fake/word.json";
-import CompetitiveStat from "../stats/game.stats";
-import GeneralCountdown from "../countdown/general.countdown";
+import CompetitiveStat from "../../stats/game.stats";
+import GeneralCountdown from "../../countdown/general.countdown";
 import { useRouter } from "next/navigation";
 
 export default function CompetitiveGameScreen() {

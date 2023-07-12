@@ -1,9 +1,11 @@
+import { IMatcherLanguages } from './matcher.interface';
+
 export interface ISocketQueueStart {
-  activeLangauge: 'en' | 'tr';
+  activeLangauge: IMatcherLanguages;
 }
 
 export interface ISocketQueueLeave {
-  activeLanguage: 'en' | 'tr';
+  activeLanguage: IMatcherLanguages;
 }
 
 export interface ISocketUser {

@@ -18,19 +18,21 @@ export interface IMatcherRoomUser {
   email: string;
   username: string;
   socketId: string;
+  matchData: IMatcherRoomUserMatchData;
 }
 
-/*
-    {
-        en: {
-            bronze: {
-                'room1': {
+export interface IMatcherRoomUserMatchData {
+  isAcceptedMatch: boolean;
+}
 
-                },
-                room2: {
+export interface IMatcherFoundedData {
+  queueLanguage: IMatcherLanguages;
+  rank: number;
+  roomId: string;
+}
 
-                },
-            }
-        }
-    }
- */
+export interface IMatcherRoomData {
+  queueLanguage: string;
+  rank: number;
+  roomId: string;
+}

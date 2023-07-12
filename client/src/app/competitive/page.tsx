@@ -9,9 +9,15 @@ import GeneralTimer from "@/src/components/timer/general.timer";
 import CompetitiveFoundedModal from "@/src/components/modals/competitive/founded.modal";
 import {
   changeIsMatchFounded,
-  changeIsUserAccepted,
+  changeMatchFoundedData,
+  matchmakerDefaultStates,
 } from "@/src/redux/features/matchmaker/matchmaker.slice";
 import { toast } from "react-hot-toast";
+import {
+  IMatcherFoundedData,
+  IMatchRoomData,
+} from "@/src/interfaces/socket/matcher.interface";
+import Game from "@/src/components/screens/game";
 
 export default function Competitive() {
   //? Hooks
@@ -32,6 +38,9 @@ export default function Competitive() {
   const [isQueueContinue, setIsQueueContinue] = useState<boolean>(false);
   const [isQueueProtocolLoading, setIsQueueProtocolLoading] =
     useState<boolean>(false);
+  const [queueData, setQueueData] = useState<IMatchRoomData | undefined>(
+    undefined
+  );
 
   //? Store selectors
   const isMatchFounded = useAppSelector(
@@ -39,6 +48,9 @@ export default function Competitive() {
   );
   const isUserAccepted = useAppSelector(
     (state) => state.matchmakerReducer.isUserAccepted
+  );
+  const matchFoundedData = useAppSelector(
+    (state) => state.matchmakerReducer.matchFoundedData
   );
 
   //? Effects
@@ -55,13 +67,29 @@ export default function Competitive() {
       setIsQueueProtocolLoading(isProtocolLoading);
     }
 
+    function onQueueBanned(banDate: string) {
+      console.log("queue ban :", banDate);
+      setIsQueueContinue(false);
+    }
+
     function onOnlineUsers(numberOfOnlineUsers: number) {
       setOnlineUsers(numberOfOnlineUsers);
     }
 
-    function onLogRoom(data: {}) {
+    function onLogRoom(data: any) {
       console.log("Rooms :", data);
     }
+
+    function onMatchRoomData(roomData: IMatchRoomData) {
+      setQueueData(roomData);
+    }
+
+    function onMatchFounded(matchData: IMatcherFoundedData) {
+      dispatch(changeIsMatchFounded(true));
+      dispatch(changeMatchFoundedData(matchData));
+    }
+
+    function onMatchReady() {}
 
     if (typeof socket !== "undefined" && auth !== null) {
       //? Connect event listener
@@ -76,8 +104,20 @@ export default function Competitive() {
       //? Admin log event listeners
       socket.on("admin:log-room", onLogRoom);
 
+      //? Match room data event listener
+      socket.on("match:room-data", onMatchRoomData);
+
+      //? Match founded event listener
+      socket.on("match:founded", onMatchFounded);
+
+      //? Match ready event listener
+      socket.on("match:ready", onMatchReady);
+
       //? Protocol loading event listener
       socket.on("queue:protocol-loading", onQueueProtocolLoading);
+
+      //? Queue banned event listener
+      socket.on("queue:banned", onQueueBanned);
     } else if (typeof socket === "undefined") {
       setIsServerOnline(false);
     }
@@ -87,7 +127,10 @@ export default function Competitive() {
         socket.off("connect", onConnect);
         socket.off("disconnect", onDisconnect);
         socket.off("system:online-users", onOnlineUsers);
-        socket.off("log:room", onLogRoom);
+        socket.off("admin:log-room", onLogRoom);
+        socket.off("match:room-data", onMatchRoomData);
+        socket.off("match:founded", onMatchFounded);
+        socket.off("match:ready", onMatchReady);
         socket.off("queue:protocol-loading", onQueueProtocolLoading);
       }
     };
@@ -97,7 +140,8 @@ export default function Competitive() {
     if (isQueueProtocolLoading) return;
 
     if (isQueueContinue) {
-      socket?.emit("queue:leave");
+      socket?.emit("queue:leave", queueData);
+      setQueueData(undefined);
     } else {
       socket?.emit("queue:start", { activeLangauge });
     }
@@ -110,18 +154,19 @@ export default function Competitive() {
   };
 
   const onEndedCountdown = () => {
-    if (isUserAccepted) {
-      //? Accepted
-      toast.success("hello");
-      console.log("accepted");
-    } else {
+    if (!isUserAccepted) {
       //? Rejected
-      console.log("rejected");
-      toast.error("user");
+      setIsQueueContinue(false);
+      toast.error(
+        "Banned from to queue 1 minute for you are not accepted match"
+      );
     }
-    dispatch(changeIsMatchFounded(false));
-    dispatch(changeIsUserAccepted(false));
+
+    //? Default
+    dispatch(matchmakerDefaultStates());
   };
+
+  const onApproved = () => socket?.emit("match:accepted", matchFoundedData);
 
   return (
     <div className="w-full flex-1 flex flex-col justify-center items-center">
@@ -233,8 +278,10 @@ export default function Competitive() {
         <CompetitiveFoundedModal
           seconds={10}
           onEndedCountdown={onEndedCountdown}
+          onApproved={onApproved}
         />
       )}
+      {false && <Game />}
       {auth?.email === "mehmetcankizilyer@gmail.com" && (
         <div className="fixed top-[10%] right-[10%]">
           <div className="bg-indigo-900 px-5 py-3 bg-opacity-50">

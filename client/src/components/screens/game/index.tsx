@@ -1,6 +1,6 @@
 "use client";
-import CompetitiveGameScreen from "@/src/components/screen/game.screen";
-import CompetitiveGameLoadScreen from "@/src/components/screen/gameload.screen";
+import CompetitiveGameScreen from "./game.screen";
+import CompetitiveGameLoadScreen from "./gameload.screen";
 import { useState } from "react";
 
 export default function Game() {
