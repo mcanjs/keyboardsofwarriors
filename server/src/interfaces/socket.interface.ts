@@ -1,11 +1,11 @@
-import { IMatcherLanguages } from './matcher.interface';
+import { IGameLanguages } from './game.interface';
 
 export interface ISocketQueueStart {
-  activeLangauge: IMatcherLanguages;
+  activeLangauge: IGameLanguages;
 }
 
 export interface ISocketQueueLeave {
-  activeLanguage: IMatcherLanguages;
+  activeLanguage: IGameLanguages;
 }
 
 export interface ISocketUser {

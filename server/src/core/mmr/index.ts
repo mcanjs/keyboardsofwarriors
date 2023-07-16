@@ -1,7 +1,7 @@
-import { IMatcherLeagues } from '@/interfaces/matcher.interface';
+import { IGameLeagues } from '@/interfaces/matcher.interface';
 
 export default class MMR {
-  public static generateMmrToString(mmr: number): IMatcherLeagues {
+  public static generateMmrToString(mmr: number): IGameLeagues {
     if (mmr > -1 && mmr < 200) {
       return 'bronze';
     } else if (mmr >= 200 && mmr < 400) {

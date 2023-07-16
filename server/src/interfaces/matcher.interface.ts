@@ -1,14 +1,12 @@
+import { IGameLanguages, IGameLeagues } from './game.interface';
+
 export type IMatcherRooms = {
-  [key in IMatcherLanguages]: {
-    [key in IMatcherLeagues]: {
+  [key in IGameLanguages]: {
+    [key in IGameLeagues]: {
       [key: string]: IMatcherRoom;
     };
   };
 };
-
-export type IMatcherLanguages = 'en' | 'tr';
-
-export type IMatcherLeagues = 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond' | 'legend';
 
 export interface IMatcherRoom {
   users: IMatcherRoomUser[];
@@ -26,7 +24,7 @@ export interface IMatcherRoomUserMatchData {
 }
 
 export interface IMatcherFoundedData {
-  queueLanguage: IMatcherLanguages;
+  queueLanguage: IGameLanguages;
   rank: number;
   roomId: string;
 }

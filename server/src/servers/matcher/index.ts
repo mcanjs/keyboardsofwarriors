@@ -1,26 +1,21 @@
-import {
-  IMatcherFoundedData,
-  IMatcherLanguages,
-  IMatcherLeagues,
-  IMatcherRoom,
-  IMatcherRoomData,
-  IMatcherRoomUser,
-  IMatcherRooms,
-} from '@/interfaces/matcher.interface';
-import { getMatcherLanguages, getMatcherLeagues } from './getter';
-import { ISocketQueueLeave, ISocketUser } from '@/interfaces/socket.interface';
+import { IMatcherFoundedData, IMatcherRoom, IMatcherRoomData, IMatcherRoomUser, IMatcherRooms } from '@/interfaces/matcher.interface';
+import { getGameLanguages, getGameLeagues } from '../getter';
+import { ISocketUser } from '@/interfaces/socket.interface';
 import MMR from '@/core/mmr';
-import { generateMatcherFoundedObject, generateMatcherRoomUserObject } from '@/core/generators/object.generator';
+import { generateCompetitiveRoomObject, generateMatcherFoundedObject, generateMatcherRoomUserObject } from '@/core/generators/object.generator';
 import { v4 as generateUniqueId } from 'uuid';
 import { Server as SocketIOServer } from 'socket.io';
 import { logger } from '@/utils/logger';
 import { PrismaClient } from '@prisma/client';
 import LeaverDedector from '@/core/dedectors/leaver.dedector';
+import Competitive from '../competitive';
+import { IGameLanguages, IGameLeagues } from '@/interfaces/game.interface';
 
 export default class Matcher {
   public matchRooms: IMatcherRooms = this.initializeMatcher();
   private io: SocketIOServer;
-  private prisma: PrismaClient;
+  private prisma = new PrismaClient();
+  private competitive: Competitive;
   private leaverDedector = new LeaverDedector();
   private states = {
     room: {
@@ -28,26 +23,26 @@ export default class Matcher {
     },
   };
 
-  constructor(io: SocketIOServer, prisma: PrismaClient) {
+  constructor(io: SocketIOServer, competitive: Competitive) {
     this.io = io;
-    this.prisma = prisma;
+    this.competitive = competitive;
   }
 
   private initializeMatcher(): IMatcherRooms {
     const rooms = {};
-    for (let i = 0; i < getMatcherLanguages().length; i++) {
-      const language = getMatcherLanguages()[i];
+    for (let i = 0; i < getGameLanguages().length; i++) {
+      const language = getGameLanguages()[i];
       rooms[language] = {};
-      for (let j = 0; j < getMatcherLeagues().length; j++) {
-        const league = getMatcherLeagues()[j];
+      for (let j = 0; j < getGameLeagues().length; j++) {
+        const league = getGameLeagues()[j];
         rooms[language][league] = {};
       }
     }
     return rooms as IMatcherRooms;
   }
 
-  public async checkRoomsAvailability(queueLanguage: IMatcherLanguages, user: ISocketUser, socketId: string): Promise<void> {
-    const userMMR: IMatcherLeagues = MMR.generateMmrToString(user.rank);
+  public async checkRoomsAvailability(queueLanguage: IGameLanguages, user: ISocketUser, socketId: string): Promise<void> {
+    const userMMR: IGameLeagues = MMR.generateMmrToString(user.rank);
     const league = this.matchRooms[queueLanguage][userMMR];
 
     for (let i = 0; i < Object.keys(league).length; i++) {
@@ -72,7 +67,7 @@ export default class Matcher {
 
   public async userLeft(user: ISocketUser, queueData: IMatcherRoomData): Promise<void> {
     try {
-      const rank: IMatcherLeagues = MMR.generateMmrToString(queueData.rank);
+      const rank: IGameLeagues = MMR.generateMmrToString(queueData.rank);
       const room = this.matchRooms[queueData.queueLanguage][rank][queueData.roomId];
 
       if (this.states.room.maxUser > room.users.length) {
@@ -87,7 +82,7 @@ export default class Matcher {
   }
 
   public async kickUserFromMatcherRoom(queueData: IMatcherRoomData, email: string): Promise<void> {
-    const rank: IMatcherLeagues = MMR.generateMmrToString(queueData.rank);
+    const rank: IGameLeagues = MMR.generateMmrToString(queueData.rank);
     const room = this.matchRooms[queueData.queueLanguage][rank][queueData.roomId];
     for (let i = 0; i < room.users.length; i++) {
       const user = room.users[i];
@@ -98,7 +93,7 @@ export default class Matcher {
     }
   }
 
-  private async createRoom(language: IMatcherLanguages, league: IMatcherLeagues, user: ISocketUser, socketId: string): Promise<void> {
+  private async createRoom(language: IGameLanguages, league: IGameLeagues, user: ISocketUser, socketId: string): Promise<void> {
     const roomId = generateUniqueId();
 
     this.matchRooms[language][league][roomId] = {
@@ -125,7 +120,7 @@ export default class Matcher {
       this.showApprovalScreenForUsers(roomData.users, matchData);
     } else if (roomData.users.length > this.states.room.maxUser) {
       //? When reached to room kick user
-      const rank: IMatcherLeagues = MMR.generateMmrToString(matchData.rank);
+      const rank: IGameLeagues = MMR.generateMmrToString(matchData.rank);
       const room = this.matchRooms[matchData.queueLanguage][rank][matchData.roomId];
 
       room.users.splice(room.users.length - 1, 1);
@@ -134,7 +129,7 @@ export default class Matcher {
   }
 
   public async userAcceptedMatch(roomData: IMatcherFoundedData, socketId: string): Promise<void> {
-    const rank: IMatcherLeagues = MMR.generateMmrToString(roomData.rank);
+    const rank: IGameLeagues = MMR.generateMmrToString(roomData.rank);
     const room = this.matchRooms[roomData.queueLanguage][rank][roomData.roomId];
 
     for (let i = 0; i < room.users.length; i++) {
@@ -147,7 +142,7 @@ export default class Matcher {
   }
 
   public async kickUsersForNotAcceptedMatch(matchData: IMatcherFoundedData): Promise<void> {
-    const rank: IMatcherLeagues = MMR.generateMmrToString(matchData.rank);
+    const rank: IGameLeagues = MMR.generateMmrToString(matchData.rank);
     const room = this.matchRooms[matchData.queueLanguage][rank][matchData.roomId];
 
     for (let i = room.users.length - 1; i >= 0; i--) {
@@ -176,16 +171,29 @@ export default class Matcher {
 
   private async checkUsersReadyForCompetitive(matchData: IMatcherFoundedData): Promise<void> {
     try {
-      const rank: IMatcherLeagues = MMR.generateMmrToString(matchData.rank);
+      const rank: IGameLeagues = MMR.generateMmrToString(matchData.rank);
       const room = this.matchRooms[matchData.queueLanguage][rank][matchData.roomId];
 
       await this.kickUsersForNotAcceptedMatch(matchData);
 
       if (room.users.length === this.states.room.maxUser) {
-        //? If still have 2 player and accepted from match go to game screen
+        const competitiveRoom = generateCompetitiveRoomObject(room);
+        await this.competitive.createCompetitiveRoom(matchData, competitiveRoom);
+
+        //? Delete match for competitive created
+        await this.deleteRoomForCompetitiveCreated(matchData);
       }
     } catch (e) {
       logger.error(`Check user ready for competitive error catcher : ${e}`);
+    }
+  }
+
+  private async deleteRoomForCompetitiveCreated(matchData: IMatcherFoundedData): Promise<void> {
+    try {
+      const rank: IGameLeagues = MMR.generateMmrToString(matchData.rank);
+      delete this.matchRooms[matchData.queueLanguage][rank][matchData.roomId];
+    } catch (e) {
+      logger.error(`Room not deleted to matcher server : ${e}`);
     }
   }
 }

@@ -4,13 +4,18 @@ import { words as fakeWords } from "@/src/json/fake/word.json";
 import CompetitiveStat from "../../stats/game.stats";
 import GeneralCountdown from "../../countdown/general.countdown";
 import { useRouter } from "next/navigation";
+import { Socket } from "socket.io-client";
 
-export default function CompetitiveGameScreen() {
+interface IProps {
+  socket: Socket;
+}
+
+export default function CompetitiveGameScreen({ socket }: IProps) {
   //? Hooks
   const router = useRouter();
 
   //? Game states
-  const [isGameStarted, setIsGameStarted] = useState<boolean>(true);
+  const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
 
   //? Word states
   const [words, setWords] = useState<string[]>([]);

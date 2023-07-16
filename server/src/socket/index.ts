@@ -7,9 +7,11 @@ import Matcher from '@/servers/matcher';
 import { PrismaClient } from '@prisma/client';
 import { IMatcherFoundedData, IMatcherRoomData } from '@/interfaces/matcher.interface';
 import LeaverDedector from '@/core/dedectors/leaver.dedector';
+import Competitive from '@/servers/competitive';
 export class ServerSocket {
   private io: SocketIOServer;
   public server: http.Server;
+  private competitive: Competitive;
   private matcher: Matcher;
   private prisma = new PrismaClient();
   private leaverDedector = new LeaverDedector();
@@ -22,7 +24,8 @@ export class ServerSocket {
         origin: '*',
       },
     });
-    this.matcher = new Matcher(this.io, this.prisma);
+    this.competitive = new Competitive(this.io);
+    this.matcher = new Matcher(this.io, this.competitive);
 
     this.connection();
   }
@@ -49,10 +52,12 @@ export class ServerSocket {
     this.io.emit('system:online-users', this.onlineUsers);
   }
 
-  private async checkUserBannedFromQueue(user: ISocketUser): Promise<boolean> {
-    if (typeof user.queueBan && user.queueBan !== '') {
-      const updatedUserData = await this.getUserInformations(user.email);
-      return this.leaverDedector.checkIsHaveBan(updatedUserData.queueBan);
+  private async checkUserBannedFromQueue(socket: Socket, user: ISocketUser): Promise<boolean> {
+    const updatedUserData = await this.getUserInformations(user.email);
+    const isHaveBan: boolean = await this.leaverDedector.checkIsHaveBan(updatedUserData.queueBan);
+    if (typeof user.queueBan && user.queueBan !== '' && isHaveBan) {
+      socket.emit('queue:banned', { banTime: updatedUserData.queueBan, serverTime: new Date().toUTCString() });
+      return true;
     }
 
     return false;
@@ -61,11 +66,9 @@ export class ServerSocket {
   private async queueStart(socket: Socket, user: ISocketUser, clientParameters: ISocketQueueStart): Promise<void> {
     socket.emit('queue:protocol-loading', true);
 
-    const isHaveBan: boolean = await this.checkUserBannedFromQueue(user);
+    const isHaveBan: boolean = await this.checkUserBannedFromQueue(socket, user);
 
-    if (isHaveBan) {
-      socket.emit('queue:banned', user.queueBan);
-    } else {
+    if (!isHaveBan) {
       //? Add queue id
       this.addQueueId(socket.id);
 
@@ -91,8 +94,16 @@ export class ServerSocket {
     await this.matcher.userAcceptedMatch(clientParameters, socket.id);
   }
 
-  private adminLogRoom(socket: Socket): void {
-    socket.emit('admin:log-room', this.matcher.matchRooms);
+  private adminMatcherRooms(socket: Socket): void {
+    socket.emit('admin:log-matcher-rooms', this.matcher.matchRooms);
+  }
+
+  private adminCompetitiveRooms(socket: Socket): void {
+    socket.emit('admin:log-competitive-rooms', this.competitive.competitiveRooms);
+  }
+
+  private async competitiveUserConnected(socket: Socket, clientParameters: IMatcherFoundedData): Promise<void> {
+    await this.competitive.userConnected(clientParameters, socket.id);
   }
 
   private async getUserInformations(email: string): Promise<ISocketUser> {
@@ -138,8 +149,12 @@ export class ServerSocket {
       //? Match accepted event listener
       socket.on('match:accepted', this.matchAccepted.bind(this, socket));
 
+      //? Competitive user connected event listener
+      socket.on('competitive:user-connected', this.competitiveUserConnected.bind(this, socket));
+
       //? Admin Log event listeners
-      socket.on('admin:log-room', this.adminLogRoom.bind(this, socket));
+      socket.on('admin:log-matcher-rooms', this.adminMatcherRooms.bind(this, socket));
+      socket.on('admin:log-competitive-rooms', this.adminCompetitiveRooms.bind(this, socket));
     });
   }
 

@@ -15,9 +15,11 @@ import {
 import { toast } from "react-hot-toast";
 import {
   IMatcherFoundedData,
-  IMatchRoomData,
+  IMatcherQueueBanData,
+  IMatcherRoomData,
 } from "@/src/interfaces/socket/matcher.interface";
 import Game from "@/src/components/screens/game";
+import CompetitiveBannedModal from "@/src/components/modals/competitive/banned.modal";
 
 export default function Competitive() {
   //? Hooks
@@ -38,9 +40,16 @@ export default function Competitive() {
   const [isQueueContinue, setIsQueueContinue] = useState<boolean>(false);
   const [isQueueProtocolLoading, setIsQueueProtocolLoading] =
     useState<boolean>(false);
-  const [queueData, setQueueData] = useState<IMatchRoomData | undefined>(
+  const [queueData, setQueueData] = useState<IMatcherRoomData | undefined>(
     undefined
   );
+  const [isHaveQueueBan, setIsHaveQueueBan] = useState<boolean>(false);
+  const [queueBanData, setQueueBanData] = useState<
+    undefined | IMatcherQueueBanData
+  >(undefined);
+
+  //? Competitive states
+  const [isAccessibleGame, setIsAccessibleGame] = useState<boolean>(false);
 
   //? Store selectors
   const isMatchFounded = useAppSelector(
@@ -52,6 +61,17 @@ export default function Competitive() {
   const matchFoundedData = useAppSelector(
     (state) => state.matchmakerReducer.matchFoundedData
   );
+
+  const calculateBanDiffSeconds = (): number => {
+    if (typeof queueBanData !== "undefined") {
+      return (
+        (new Date(queueBanData.banTime).getTime() -
+          new Date(queueBanData.serverTime).getTime()) /
+        1000
+      );
+    }
+    return 0;
+  };
 
   //? Effects
   useEffect(() => {
@@ -67,21 +87,30 @@ export default function Competitive() {
       setIsQueueProtocolLoading(isProtocolLoading);
     }
 
-    function onQueueBanned(banDate: string) {
-      console.log("queue ban :", banDate);
+    function onQueueBanned(data: IMatcherQueueBanData) {
       setIsQueueContinue(false);
+      setQueueBanData(data);
+      setIsHaveQueueBan(true);
     }
 
     function onOnlineUsers(numberOfOnlineUsers: number) {
       setOnlineUsers(numberOfOnlineUsers);
     }
 
-    function onLogRoom(data: any) {
-      console.log("Rooms :", data);
+    function onLogMatcherRooms(data: any) {
+      console.log("Matcher Rooms :", data);
     }
 
-    function onMatchRoomData(roomData: IMatchRoomData) {
+    function onLogCompetitiveRooms(data: any) {
+      console.log("Competitive Rooms :", data);
+    }
+
+    function onMatchRoomData(roomData: IMatcherRoomData) {
       setQueueData(roomData);
+    }
+
+    function onCompetitiveAccessible(roomId: string) {
+      setIsAccessibleGame(true);
     }
 
     function onMatchFounded(matchData: IMatcherFoundedData) {
@@ -102,7 +131,8 @@ export default function Competitive() {
       socket.on("system:online-users", onOnlineUsers);
 
       //? Admin log event listeners
-      socket.on("admin:log-room", onLogRoom);
+      socket.on("admin:log-matcher-rooms", onLogMatcherRooms);
+      socket.on("admin:log-competitive-rooms", onLogCompetitiveRooms);
 
       //? Match room data event listener
       socket.on("match:room-data", onMatchRoomData);
@@ -112,6 +142,9 @@ export default function Competitive() {
 
       //? Match ready event listener
       socket.on("match:ready", onMatchReady);
+
+      //? Competitive accessible event listener
+      socket.on("competitive:accessible", onCompetitiveAccessible);
 
       //? Protocol loading event listener
       socket.on("queue:protocol-loading", onQueueProtocolLoading);
@@ -127,10 +160,12 @@ export default function Competitive() {
         socket.off("connect", onConnect);
         socket.off("disconnect", onDisconnect);
         socket.off("system:online-users", onOnlineUsers);
-        socket.off("admin:log-room", onLogRoom);
+        socket.off("admin:log-matcher-rooms", onLogMatcherRooms);
+        socket.off("admin:log-competitive-rooms", onLogCompetitiveRooms);
         socket.off("match:room-data", onMatchRoomData);
         socket.off("match:founded", onMatchFounded);
         socket.off("match:ready", onMatchReady);
+        socket.off("competitive:accessible", onCompetitiveAccessible);
         socket.off("queue:protocol-loading", onQueueProtocolLoading);
       }
     };
@@ -168,129 +203,153 @@ export default function Competitive() {
 
   const onApproved = () => socket?.emit("match:accepted", matchFoundedData);
 
+  const bannedQueueOnEndedCountdown = () => {
+    setIsHaveQueueBan(false);
+  };
+
   return (
     <div className="w-full flex-1 flex flex-col justify-center items-center">
-      <div className="max-w-lg w-full rounded-lg border bg-base-200 border-gray-300 text-center shadow-xl">
-        <div className="flex flex-col items-center justify-center gap-4 border-b border-gray-100 px-6 py-5">
-          <span className="flex gap-1 text-xs">
-            <span>Current Leaguge</span>
-            <span>:</span>
-            <span>Bronze</span>
-          </span>
-          <span className="flex gap-1 text-xs">
-            <span>Username</span>
-            <span>:</span>
-            <span>mcann</span>
-          </span>
-          <span>
-            <select
-              defaultValue={activeLangauge}
-              className="select select-sm select-ghost select-bordered w-full max-w-xs"
-              onChange={(e) => onChangeLang(e.currentTarget.value)}
-              disabled={isQueueContinue}
-            >
-              <option value="en">English</option>
-              <option value="tr">Turkish</option>
-            </select>
-          </span>
-        </div>
+      {!isAccessibleGame && (
+        <>
+          <div className="max-w-lg w-full rounded-lg border bg-base-200 border-gray-300 text-center shadow-xl">
+            <div className="flex flex-col items-center justify-center gap-4 border-b border-gray-100 px-6 py-5">
+              <span className="flex gap-1 text-xs">
+                <span>Current Leaguge</span>
+                <span>:</span>
+                <span>Bronze</span>
+              </span>
+              <span className="flex gap-1 text-xs">
+                <span>Username</span>
+                <span>:</span>
+                <span>mcann</span>
+              </span>
+              <span>
+                <select
+                  defaultValue={activeLangauge}
+                  className="select select-sm select-ghost select-bordered w-full max-w-xs"
+                  onChange={(e) => onChangeLang(e.currentTarget.value)}
+                  disabled={isQueueContinue}
+                >
+                  <option value="en">English</option>
+                  <option value="tr">Turkish</option>
+                </select>
+              </span>
+            </div>
 
-        <div className="px-6 py-5">
-          <div className="mt-4 space-y-2">
-            <div
-              onClick={findMatch}
-              className={`${
-                isQueueContinue
-                  ? "bg-red-600 active:bg-red-500"
-                  : "bg-indigo-600 active:bg-indigo-500"
-              } group w-full 
+            <div className="px-6 py-5">
+              <div className="mt-4 space-y-2">
+                <div
+                  onClick={findMatch}
+                  className={`${
+                    isQueueContinue
+                      ? "bg-red-600 active:bg-red-500"
+                      : "bg-indigo-600 active:bg-indigo-500"
+                  } group w-full 
               relative inline-flex justify-center items-center overflow-hidden rounded-full  transition-all px-8 py-3 text-white cursor-pointer focus:outline-none focus:ring
               `}
-            >
-              <span
-                className={`${
-                  isQueueProtocolLoading ? "block" : "hidden"
-                } loading loading-ring loading-sm`}
-              ></span>
-              <div
-                className={`${
-                  !isQueueProtocolLoading ? "flex" : "hidden"
-                } items-center`}
-              >
-                <span className="absolute -start-full transition-all group-hover:start-4">
-                  <IoArrowForwardOutline
+                >
+                  <span
                     className={`${
-                      isQueueContinue ? "rotate-180" : ""
-                    } transition-all`}
-                  />
-                </span>
+                      isQueueProtocolLoading ? "block" : "hidden"
+                    } loading loading-ring loading-sm`}
+                  ></span>
+                  <div
+                    className={`${
+                      !isQueueProtocolLoading ? "flex" : "hidden"
+                    } items-center`}
+                  >
+                    <span className="absolute -start-full transition-all group-hover:start-4">
+                      <IoArrowForwardOutline
+                        className={`${
+                          isQueueContinue ? "rotate-180" : ""
+                        } transition-all`}
+                      />
+                    </span>
 
-                <span className="text-sm font-medium transition-all select-none group-hover:ms-4">
-                  {isQueueContinue ? "Leave to Queue" : "Find a Match"}
-                </span>
+                    <span className="text-sm font-medium transition-all select-none group-hover:ms-4">
+                      {isQueueContinue ? "Leave to Queue" : "Find a Match"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-row justify-between mt-4">
+                {isServerOnline ? (
+                  <p className="inline-flex items-center gap-1">
+                    <span
+                      className={`${
+                        isServerOnline ? "bg-green-500" : "bg-red-500"
+                      } inline-block h-1.5 w-1.5 rounded-full`}
+                    ></span>
+                    <span
+                      className={`${
+                        isServerOnline ? "text-green-700" : "text-red-700"
+                      } text-xs font-medium`}
+                    >
+                      Server {isServerOnline ? "Online" : "Offline"}
+                    </span>
+                  </p>
+                ) : (
+                  <div className="loading loading-ring loading-sm w-[16px]"></div>
+                )}
+
+                <p className="inline-flex items-center gap-1">
+                  <span className="text-xs font-medium text-green-700">
+                    Online Users
+                  </span>
+                  <span className="text-xs text-green-700">:</span>
+                  <span className="text-xs font-medium text-green-700">
+                    {onlineUsers}
+                  </span>
+                </p>
               </div>
             </div>
-          </div>
 
-          <div className="flex flex-row justify-between mt-4">
-            {isServerOnline ? (
-              <p className="inline-flex items-center gap-1">
-                <span
-                  className={`${
-                    isServerOnline ? "bg-green-500" : "bg-red-500"
-                  } inline-block h-1.5 w-1.5 rounded-full`}
-                ></span>
-                <span
-                  className={`${
-                    isServerOnline ? "text-green-700" : "text-red-700"
-                  } text-xs font-medium`}
-                >
-                  Server {isServerOnline ? "Online" : "Offline"}
-                </span>
-              </p>
-            ) : (
-              <div className="loading loading-ring loading-sm w-[16px]"></div>
-            )}
-
-            <p className="inline-flex items-center gap-1">
-              <span className="text-xs font-medium text-green-700">
-                Online Users
+            <div className="flex justify-center gap-4 border-t border-gray-100 px-6 py-5">
+              <span className="font-mono">
+                {isQueueContinue && !isQueueProtocolLoading ? (
+                  <GeneralTimer />
+                ) : (
+                  <div className="p-3"></div>
+                )}
               </span>
-              <span className="text-xs text-green-700">:</span>
-              <span className="text-xs font-medium text-green-700">
-                {onlineUsers}
-              </span>
-            </p>
+            </div>
           </div>
-        </div>
-
-        <div className="flex justify-center gap-4 border-t border-gray-100 px-6 py-5">
-          <span className="font-mono">
-            {isQueueContinue && !isQueueProtocolLoading ? (
-              <GeneralTimer />
-            ) : (
-              <div className="p-3"></div>
-            )}
-          </span>
-        </div>
-      </div>
-      {isMatchFounded && (
-        <CompetitiveFoundedModal
-          seconds={10}
-          onEndedCountdown={onEndedCountdown}
-          onApproved={onApproved}
-        />
+          {isMatchFounded && (
+            <CompetitiveFoundedModal
+              seconds={10}
+              onEndedCountdown={onEndedCountdown}
+              onApproved={onApproved}
+            />
+          )}
+          {isHaveQueueBan && calculateBanDiffSeconds() > 0 && (
+            <CompetitiveBannedModal
+              seconds={calculateBanDiffSeconds()}
+              onEndedCountdown={bannedQueueOnEndedCountdown}
+            />
+          )}
+        </>
       )}
-      {false && <Game />}
+      {isAccessibleGame &&
+        typeof queueData !== "undefined" &&
+        typeof socket !== "undefined" && (
+          <Game socket={socket} queueData={queueData} />
+        )}
       {auth?.email === "mehmetcankizilyer@gmail.com" && (
         <div className="fixed top-[10%] right-[10%]">
-          <div className="bg-indigo-900 px-5 py-3 bg-opacity-50">
+          <div className="flex flex-col gap-4 px-5 py-3 bg-indigo-900 bg-opacity-50">
             <p className="pb-1">Admin shortcuts</p>
             <button
               className="btn btn-success"
-              onClick={() => socket?.emit("admin:log-room")}
+              onClick={() => socket?.emit("admin:log-matcher-rooms")}
             >
-              Log: Rooms
+              Log: Matcher Rooms
+            </button>
+            <button
+              className="btn btn-success"
+              onClick={() => socket?.emit("admin:log-competitive-rooms")}
+            >
+              Log: Competitive Rooms
             </button>
           </div>
         </div>
