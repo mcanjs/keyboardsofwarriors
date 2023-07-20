@@ -17,3 +17,17 @@ export interface ISocketUser {
   queueBan?: string;
   username?: string;
 }
+
+export interface ISocketQueueList {
+  [key: string]: ISocketQueueListData;
+}
+
+export interface ISocketQueueListData {
+  activeQueue: ISocketQueueListActiveQueue | undefined;
+}
+
+export interface ISocketQueueListActiveQueue {
+  queueLanguage: IGameLanguages;
+  rank: number;
+  roomId: string;
+}

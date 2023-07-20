@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import { Container } from 'typedi';
 import { RequestWithUser } from '@interfaces/auth.interface';
-import { User } from '@interfaces/users.interface';
+
 import { AuthService } from '@services/auth.service';
+import { User } from '@prisma/client';
 
 export class AuthController {
   public auth = Container.get(AuthService);
@@ -24,7 +25,7 @@ export class AuthController {
       const { cookie, findUser } = await this.auth.login(userData);
 
       res.setHeader('Set-Cookie', [cookie]);
-      res.status(200).json({ data: findUser, message: 'login' });
+      res.status(200).json({ data: findUser, message: 'login', cookie });
     } catch (error) {
       next(error);
     }

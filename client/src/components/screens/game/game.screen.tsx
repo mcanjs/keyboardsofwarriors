@@ -5,12 +5,15 @@ import CompetitiveStat from "../../stats/game.stats";
 import GeneralCountdown from "../../countdown/general.countdown";
 import { useRouter } from "next/navigation";
 import { Socket } from "socket.io-client";
+import { Loader } from "../../loader";
+import { IMatcherRoomData } from "@/src/interfaces/socket/matcher.interface";
 
 interface IProps {
   socket: Socket;
+  queueData: IMatcherRoomData;
 }
 
-export default function CompetitiveGameScreen({ socket }: IProps) {
+export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
   //? Hooks
   const router = useRouter();
 
@@ -94,55 +97,77 @@ export default function CompetitiveGameScreen({ socket }: IProps) {
   };
 
   useEffect(() => {
-    setWords(fakeWords);
-  }, []);
+    function onCompetitivePlay(words: string[]) {
+      setWords(words);
+    }
+
+    if (socket && typeof socket !== "undefined") {
+      //? Competitive game screen loaded emitter
+      socket.emit("competitive:game-screen-loaded", queueData);
+
+      //? Competitive play event listener
+      socket.on("competitive:play", onCompetitivePlay);
+    }
+  }, [socket]);
 
   const onCountdownEnded = () => {
     router.push(`/result?mi=333`);
   };
 
+  const startGameOnCountdownEnded = () => {};
+
   return (
-    <div className={!isGameStarted ? "relative blur select-none" : ""}>
-      <CompetitiveStat correct={correctWord} incorrect={incorrectWord} />
-      <div className="border-t border-gray-800 p-3">
-        <GeneralCountdown
-          seconds={60}
-          withProgressBar
-          onCountdownEnded={onCountdownEnded}
-          isWaitProtocol={!isGameStarted}
-        />
-      </div>
-      <div>
-        <div className="max-h-[255px] overflow-hidden p-5 mb-4">
-          <div ref={wordContainerRef} className="flex flex-wrap">
-            {words.length > 0 ? (
-              words.map((word, wIndex) => (
-                <span
-                  className={`py-1 px-2 ${
-                    0 === wIndex ? "bg-gray-100 text-black" : ""
-                  }`}
-                  key={wIndex}
-                  ref={(el) => refCreator(el, wIndex)}
-                >
-                  {word}
-                </span>
-              ))
-            ) : (
-              <div className="flex items-center mx-auto">
-                <span className="loading loading-lg"></span>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="w-full">
-          <input
-            ref={inputRef}
-            type="text"
-            className="w-full p-1 rounded-bl rounded-br"
-            onKeyUp={checkWord}
+    <div className="relative">
+      <div className={!isGameStarted ? "relative blur select-none" : ""}>
+        <CompetitiveStat correct={correctWord} incorrect={incorrectWord} />
+        <div className="border-t border-gray-800 p-3">
+          <GeneralCountdown
+            seconds={60}
+            withProgressBar
+            onCountdownEnded={onCountdownEnded}
+            isWaitProtocol={!isGameStarted}
           />
         </div>
+        <div>
+          <div className="max-h-[255px] overflow-hidden p-5 mb-4">
+            <div ref={wordContainerRef} className="flex flex-wrap">
+              {words.length > 0 ? (
+                words.map((word, wIndex) => (
+                  <span
+                    className={`py-1 px-2 ${
+                      0 === wIndex ? "bg-gray-100 text-black" : ""
+                    }`}
+                    key={wIndex}
+                    ref={(el) => refCreator(el, wIndex)}
+                  >
+                    {word}
+                  </span>
+                ))
+              ) : (
+                <div className="flex items-center mx-auto">
+                  <span className="loading loading-lg"></span>
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="w-full">
+            <input
+              ref={inputRef}
+              type="text"
+              className="w-full p-1 rounded-bl rounded-br"
+              onKeyUp={checkWord}
+            />
+          </div>
+        </div>
       </div>
+      {!isGameStarted && (
+        <div className="absolute top-2/4 left-2/4 -translate-x-1/2 -translate-y-1/2 text-2xl">
+          <GeneralCountdown
+            seconds={3}
+            onCountdownEnded={startGameOnCountdownEnded}
+          />
+        </div>
+      )}
     </div>
   );
 }

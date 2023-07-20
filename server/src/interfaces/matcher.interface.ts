@@ -30,7 +30,7 @@ export interface IMatcherFoundedData {
 }
 
 export interface IMatcherRoomData {
-  queueLanguage: string;
+  queueLanguage: IGameLanguages;
   rank: number;
   roomId: string;
 }

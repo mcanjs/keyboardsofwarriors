@@ -11,7 +11,7 @@ export default function GeneralCountdown(props: IProps) {
   const [seconds, setSeconds] = useState<number>(props.seconds);
   useEffect(() => {
     const timer = setInterval(() => {
-      if (props.isWaitProtocol) return console.log("waiting any protocol..");
+      if (props.isWaitProtocol) return;
       if (seconds > 0) {
         setSeconds((old) => old - 1);
       } else {

@@ -12,6 +12,7 @@ import { HttpException } from '@exceptions/httpException';
  * @param forbidNonWhitelisted If you would rather to have an error thrown when any non-whitelisted properties are present
  */
 export const ValidationMiddleware = (type: any, skipMissingProperties: any = false, whitelist = false, forbidNonWhitelisted = false) => {
+  console.log('working here!!');
   return (req: Request, res: Response, next: NextFunction) => {
     const dto = plainToInstance(type, req.body);
     validateOrReject(dto, { skipMissingProperties, whitelist, forbidNonWhitelisted })

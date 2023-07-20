@@ -1,4 +1,6 @@
-export function GenerateWord(language: 'en', requestedWord: number) {
+import { IGameLanguages } from '@/interfaces/game.interface';
+
+export function GenerateWord(language: IGameLanguages, requestedWord: number) {
   const words: string[] = require(`../words/${language}.json`).words;
   const length = words.length;
   const x = [];

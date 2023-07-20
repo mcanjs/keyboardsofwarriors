@@ -7,17 +7,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Matches {
-  id String @id @default(auto()) @map("_id") @db.ObjectId
+model Admin {
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  isAdmin Boolean
+  User    User[]
+}
+
+model Premium {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  isPremium Boolean
+  User      User[]
 }
 
 model User {
-  id               String  @id @default(auto()) @map("_id") @db.ObjectId
-  email            String  @unique
-  lose             BigInt
-  password         String
-  queueBan         String
-  rank             BigInt
-  username         String  @unique
-  win              BigInt
+  id        String  @id @map("_id") @db.ObjectId
+  email     String  @unique
+  username  String  @unique
+  win       Int
+  lose      Int
+  rank      Int
+  password  String
+  queueBan  String
+  premium   Premium @relation(fields: [premiumId], references: [id])
+  premiumId String  @db.ObjectId
+  admin     Admin   @relation(fields: [adminId], references: [id])
+  adminId   String  @db.ObjectId
 }

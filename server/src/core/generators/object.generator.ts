@@ -1,7 +1,18 @@
-import { IMatcherFoundedData, IMatcherRoom, IMatcherRoomUser } from '@/interfaces/matcher.interface';
+import { IMatcherFoundedData, IMatcherRoom, IMatcherRoomData, IMatcherRoomUser } from '@/interfaces/matcher.interface';
 import { IGameLanguages } from '@/interfaces/game.interface';
-import { ISocketUser } from '@/interfaces/socket.interface';
+import { ISocketQueueListData, ISocketUser } from '@/interfaces/socket.interface';
 import { ICompetitiveRoom, ICompetitiveRoomUser } from '@/interfaces/competitive.interface';
+import { GenerateWord } from './word.generator';
+
+export const generateSocketQueueListDataObject = (email: string, queueData: IMatcherRoomData): ISocketQueueListData => {
+  return {
+    activeQueue: {
+      queueLanguage: queueData.queueLanguage,
+      rank: queueData.rank,
+      roomId: queueData.roomId,
+    },
+  };
+};
 
 export const generateMatcherRoomUserObject = (user: ISocketUser, socketId: string): IMatcherRoomUser => {
   return {
@@ -29,14 +40,16 @@ export const generateCompetitiveRoomUserObject = (user: IMatcherRoomUser): IComp
     socketId: user.socketId,
     gameData: {
       isUserJoined: false,
+      isLoadedScreen: false,
     },
   };
 };
 
-export const generateCompetitiveRoomObject = (matcherRoom: IMatcherRoom): ICompetitiveRoom => {
+export const generateCompetitiveRoomObject = (matcherRoom: IMatcherRoom, language: IGameLanguages): ICompetitiveRoom => {
   const competitiveRoom: ICompetitiveRoom = {
     users: [],
     isGameStarted: false,
+    words: GenerateWord(language, 350),
   };
 
   for (let i = 0; i < matcherRoom.users.length; i++) {

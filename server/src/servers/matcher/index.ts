@@ -41,7 +41,7 @@ export default class Matcher {
     return rooms as IMatcherRooms;
   }
 
-  public async checkRoomsAvailability(queueLanguage: IGameLanguages, user: ISocketUser, socketId: string): Promise<void> {
+  public async checkRoomsAvailability(queueLanguage: IGameLanguages, user: ISocketUser, socketId: string): Promise<IMatcherRoomData> {
     const userMMR: IGameLeagues = MMR.generateMmrToString(user.rank);
     const league = this.matchRooms[queueLanguage][userMMR];
 
@@ -57,12 +57,12 @@ export default class Matcher {
         socket.emit('match:room-data', { queueLanguage, rank: user.rank, roomId: Object.keys(league)[i] });
 
         await this.checkIsRoomReadyForApprovalScreen(room, generateMatcherFoundedObject(user, queueLanguage, Object.keys(league)[i]));
-        return;
+        return { queueLanguage, rank: user.rank, roomId: Object.keys(league)[i] };
       }
     }
 
     //? Create new room for not available room
-    await this.createRoom(queueLanguage, userMMR, user, socketId);
+    return await this.createRoom(queueLanguage, userMMR, user, socketId);
   }
 
   public async userLeft(user: ISocketUser, queueData: IMatcherRoomData): Promise<void> {
@@ -93,7 +93,7 @@ export default class Matcher {
     }
   }
 
-  private async createRoom(language: IGameLanguages, league: IGameLeagues, user: ISocketUser, socketId: string): Promise<void> {
+  private async createRoom(language: IGameLanguages, league: IGameLeagues, user: ISocketUser, socketId: string): Promise<IMatcherRoomData> {
     const roomId = generateUniqueId();
 
     this.matchRooms[language][league][roomId] = {
@@ -102,6 +102,8 @@ export default class Matcher {
 
     const socket = this.io.sockets.sockets.get(socketId);
     socket.emit('match:room-data', { queueLanguage: language, rank: user.rank, roomId });
+
+    return { queueLanguage: language, rank: user.rank, roomId };
   }
 
   private async showApprovalScreenForUsers(users: IMatcherRoomUser[], matchData: IMatcherFoundedData): Promise<void> {
@@ -177,7 +179,7 @@ export default class Matcher {
       await this.kickUsersForNotAcceptedMatch(matchData);
 
       if (room.users.length === this.states.room.maxUser) {
-        const competitiveRoom = generateCompetitiveRoomObject(room);
+        const competitiveRoom = generateCompetitiveRoomObject(room, matchData.queueLanguage);
         await this.competitive.createCompetitiveRoom(matchData, competitiveRoom);
 
         //? Delete match for competitive created

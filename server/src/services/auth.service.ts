@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, User } from '@prisma/client';
 import { compare, hash } from 'bcrypt';
 import { sign } from 'jsonwebtoken';
 import { Service } from 'typedi';
@@ -6,7 +6,6 @@ import { SECRET_KEY } from '@config';
 import { CreateUserDto } from '@dtos/users.dto';
 import { HttpException } from '@exceptions/httpException';
 import { DataStoredInToken, TokenData } from '@interfaces/auth.interface';
-import { User } from '@interfaces/users.interface';
 
 @Service()
 export class AuthService {
@@ -17,7 +16,23 @@ export class AuthService {
     if (findUser) throw new HttpException(409, `This email ${userData.email} already exists`);
 
     const hashedPassword = await hash(userData.password, 10);
-    const createUserData: Promise<User> = this.users.create({ data: { ...userData, password: hashedPassword } });
+    const createUserData: Promise<User> = this.users.create({
+      data: {
+        ...userData,
+        password: hashedPassword,
+        queueBan: '',
+        premium: {
+          create: {
+            isPremium: false,
+          },
+        },
+        admin: {
+          create: {
+            isAdmin: false,
+          },
+        },
+      },
+    });
 
     return createUserData;
   }

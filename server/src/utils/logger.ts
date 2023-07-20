@@ -26,7 +26,6 @@ const logger = winston.createLogger({
     logFormat,
   ),
   transports: [
-    // debug log setting
     new winstonDaily({
       level: 'debug',
       datePattern: 'YYYY-MM-DD',

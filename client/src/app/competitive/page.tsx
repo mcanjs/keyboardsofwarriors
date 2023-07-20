@@ -20,6 +20,9 @@ import {
 } from "@/src/interfaces/socket/matcher.interface";
 import Game from "@/src/components/screens/game";
 import CompetitiveBannedModal from "@/src/components/modals/competitive/banned.modal";
+import { IGameLanguages } from "@/src/interfaces/socket/game.interface";
+import { checkGameActiveLanguageIsVerify } from "@/src/utils/helper";
+import AdminShortcuts from "@/src/components/shortcuts/admin.shortcuts";
 
 export default function Competitive() {
   //? Hooks
@@ -28,7 +31,7 @@ export default function Competitive() {
   const socket = useSocket();
 
   //? Lang states
-  const [activeLangauge, setActiveLanguage] = useState<string>("en");
+  const [activeLangauge, setActiveLanguage] = useState<IGameLanguages>("en");
 
   //? System states
   const [isServerOnline, setIsServerOnline] = useState<boolean | undefined>(
@@ -173,6 +176,12 @@ export default function Competitive() {
 
   const findMatch = () => {
     if (isQueueProtocolLoading) return;
+    if (!checkGameActiveLanguageIsVerify(activeLangauge)) {
+      toast.error(
+        "There is no such language registered in the system, please do not manually change the language selector."
+      );
+      return;
+    }
 
     if (isQueueContinue) {
       socket?.emit("queue:leave", queueData);
@@ -184,7 +193,7 @@ export default function Competitive() {
     setIsQueueContinue((old) => !old);
   };
 
-  const onChangeLang = (lang: string) => {
+  const onChangeLang = (lang: IGameLanguages) => {
     setActiveLanguage(lang);
   };
 
@@ -227,7 +236,9 @@ export default function Competitive() {
                 <select
                   defaultValue={activeLangauge}
                   className="select select-sm select-ghost select-bordered w-full max-w-xs"
-                  onChange={(e) => onChangeLang(e.currentTarget.value)}
+                  onChange={(e) =>
+                    onChangeLang(e.currentTarget.value as IGameLanguages)
+                  }
                   disabled={isQueueContinue}
                 >
                   <option value="en">English</option>
@@ -335,25 +346,7 @@ export default function Competitive() {
         typeof socket !== "undefined" && (
           <Game socket={socket} queueData={queueData} />
         )}
-      {auth?.email === "mehmetcankizilyer@gmail.com" && (
-        <div className="fixed top-[10%] right-[10%]">
-          <div className="flex flex-col gap-4 px-5 py-3 bg-indigo-900 bg-opacity-50">
-            <p className="pb-1">Admin shortcuts</p>
-            <button
-              className="btn btn-success"
-              onClick={() => socket?.emit("admin:log-matcher-rooms")}
-            >
-              Log: Matcher Rooms
-            </button>
-            <button
-              className="btn btn-success"
-              onClick={() => socket?.emit("admin:log-competitive-rooms")}
-            >
-              Log: Competitive Rooms
-            </button>
-          </div>
-        </div>
-      )}
+      <AdminShortcuts socket={socket} />
     </div>
   );
 }

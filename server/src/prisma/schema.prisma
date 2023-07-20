@@ -10,13 +10,29 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model Admin {
+  id      String  @id @default(auto()) @map("_id") @db.ObjectId
+  isAdmin Boolean @default(false)
+  User    User[]
+}
+
+model Premium {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  isPremium Boolean @default(false)
+  User      User[]
+}
+
 model User {
-  id       String @id @default(auto()) @map("_id") @db.ObjectId
-  email    String @unique
-  username String @unique
-  win      Int
-  lose     Int
-  rank     Int
-  password String
-  queueBan String
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  email     String  @unique
+  username  String  @unique
+  win       Int     @default(0)
+  lose      Int     @default(0)
+  rank      Int     @default(0)
+  password  String
+  queueBan  String
+  premium   Premium @relation(fields: [premiumId], references: [id])
+  premiumId String  @db.ObjectId
+  admin     Admin   @relation(fields: [adminId], references: [id])
+  adminId   String  @db.ObjectId
 }

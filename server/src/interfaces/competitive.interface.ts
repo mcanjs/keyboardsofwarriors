@@ -11,6 +11,7 @@ export type ICompetitiveRooms = {
 export interface ICompetitiveRoom {
   users: ICompetitiveRoomUser[];
   isGameStarted: boolean;
+  words: string[];
 }
 
 export interface ICompetitiveRoomUser {
@@ -22,4 +23,5 @@ export interface ICompetitiveRoomUser {
 
 export interface ICompetitiveGameData {
   isUserJoined: boolean;
+  isLoadedScreen: boolean;
 }

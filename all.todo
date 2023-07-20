@@ -1,0 +1,5 @@
+✘ Next.js authentication structure need to be changed @client @cancelled(23-07-19 02:08)
+✔ Client-side admin shortcuts NEW UI @client @done(23-07-19 03:03)
+✔ Admin and Premium feature need to be added @server @database @done(23-07-19 02:40)
+☐ Login page error actions @client
+☐ Login page yup validation @client

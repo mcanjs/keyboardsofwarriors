@@ -110,4 +110,41 @@ export default class Competitive {
     //? Change room state for game started
     room.isGameStarted = true;
   }
+
+  public async gameScreenLoaded(matchData: IMatcherFoundedData, socketId: string): Promise<void> {
+    try {
+      const rank = MMR.generateMmrToString(matchData.rank);
+      const room: ICompetitiveRoom = this.competitiveRooms[matchData.queueLanguage][rank][matchData.roomId];
+
+      for (let i = 0; i < room.users.length; i++) {
+        const user = room.users[i];
+
+        if (user.socketId === socketId) {
+          user.gameData.isLoadedScreen = true;
+        }
+      }
+
+      await this.checkGamePlayable(matchData);
+    } catch (e) {
+      console.log('Game screen loaded error :', e);
+    }
+  }
+
+  private async checkGamePlayable(matchData: IMatcherFoundedData): Promise<void> {
+    const rank = MMR.generateMmrToString(matchData.rank);
+    const room: ICompetitiveRoom = this.competitiveRooms[matchData.queueLanguage][rank][matchData.roomId];
+    let gamePlayable = true;
+
+    for (let i = 0; i < room.users.length; i++) {
+      const user = room.users[i];
+
+      if (!user.gameData.isLoadedScreen) {
+        gamePlayable = false;
+      }
+    }
+
+    if (gamePlayable) {
+      this.io.to(matchData.roomId).emit('competitive:play', room.words);
+    }
+  }
 }

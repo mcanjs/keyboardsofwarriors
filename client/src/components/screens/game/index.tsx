@@ -49,10 +49,12 @@ export default function Game({ socket, queueData }: IProps) {
         {isGameLoading ? (
           <div className="max-w-lg mx-auto">
             <CompetitiveGameLoadScreen />
-            <p className="p-3 text-center">The connection of the opponent is expected in the game</p>
+            <p className="p-3 text-center">
+              The connection of the opponent is expected in the game
+            </p>
           </div>
         ) : (
-          <CompetitiveGameScreen socket={socket} />
+          <CompetitiveGameScreen socket={socket} queueData={queueData} />
         )}
       </div>
     </div>
