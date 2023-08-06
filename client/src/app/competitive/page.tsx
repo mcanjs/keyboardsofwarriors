@@ -18,7 +18,7 @@ import {
   IMatcherQueueBanData,
   IMatcherRoomData,
 } from "@/src/interfaces/socket/matcher.interface";
-import Game from "@/src/components/screens/game";
+import Game from "@/src/components/screens/competitive/game";
 import CompetitiveBannedModal from "@/src/components/modals/competitive/banned.modal";
 import { IGameLanguages } from "@/src/interfaces/socket/game.interface";
 import { checkGameActiveLanguageIsVerify } from "@/src/utils/helper";

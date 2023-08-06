@@ -1,7 +1,7 @@
 "use client";
 import { Socket } from "socket.io-client";
 import CompetitiveGameScreen from "./game.screen";
-import CompetitiveGameLoadScreen from "./gameload.screen";
+import CompetitiveGameLoadScreen from "./load";
 import { useEffect, useState } from "react";
 import { IMatcherRoomData } from "@/src/interfaces/socket/matcher.interface";
 import { useRouter } from "next/navigation";

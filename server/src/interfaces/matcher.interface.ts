@@ -16,6 +16,7 @@ export interface IMatcherRoomUser {
   email: string;
   username: string;
   socketId: string;
+  userId: string;
   matchData: IMatcherRoomUserMatchData;
 }
 

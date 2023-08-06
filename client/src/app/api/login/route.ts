@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     return response;
   } else {
-    NextResponse.json(
+    return NextResponse.json(
       {
         success: false,
         message: "User not found",

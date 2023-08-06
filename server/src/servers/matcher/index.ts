@@ -44,7 +44,6 @@ export default class Matcher {
   public async checkRoomsAvailability(queueLanguage: IGameLanguages, user: ISocketUser, socketId: string): Promise<IMatcherRoomData> {
     const userMMR: IGameLeagues = MMR.generateMmrToString(user.rank);
     const league = this.matchRooms[queueLanguage][userMMR];
-
     for (let i = 0; i < Object.keys(league).length; i++) {
       const room = league[Object.keys(league)[i]];
       const roomUsers = room.users;
@@ -84,11 +83,14 @@ export default class Matcher {
   public async kickUserFromMatcherRoom(queueData: IMatcherRoomData, email: string): Promise<void> {
     const rank: IGameLeagues = MMR.generateMmrToString(queueData.rank);
     const room = this.matchRooms[queueData.queueLanguage][rank][queueData.roomId];
-    for (let i = 0; i < room.users.length; i++) {
-      const user = room.users[i];
 
-      if (user.email === email) {
-        room.users.splice(i, 1);
+    if (room) {
+      for (let i = 0; i < room.users.length; i++) {
+        const user = room.users[i];
+
+        if (user.email === email) {
+          room.users.splice(i, 1);
+        }
       }
     }
   }

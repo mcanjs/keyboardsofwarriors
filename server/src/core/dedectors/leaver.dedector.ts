@@ -1,7 +1,4 @@
 export default class LeaverDedector {
-  constructor() {
-    //?
-  }
   public async createBanDate(): Promise<string> {
     const date = new Date();
     return new Date(date.getTime() + 1 * 60000).toUTCString();

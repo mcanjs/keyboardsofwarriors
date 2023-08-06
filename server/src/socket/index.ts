@@ -9,6 +9,7 @@ import { IMatcherFoundedData, IMatcherRoomData } from '@/interfaces/matcher.inte
 import LeaverDedector from '@/core/dedectors/leaver.dedector';
 import Competitive from '@/servers/competitive';
 import { generateSocketQueueListDataObject } from '@/core/generators/object.generator';
+import { ICompetitiveMistakeClientParameters } from '@/interfaces/competitive.interface';
 export class ServerSocket {
   private io: SocketIOServer;
   public server: http.Server;
@@ -47,9 +48,14 @@ export class ServerSocket {
   }
 
   private async checkUserInQueue(email: string): Promise<void> {
-    if (typeof this.queueList[email] !== 'undefined') {
-      await this.matcher.kickUserFromMatcherRoom(this.queueList[email].activeQueue, email);
-      delete this.queueList[email];
+    try {
+      if (typeof this.queueList[email] !== 'undefined') {
+        await this.matcher.kickUserFromMatcherRoom(this.queueList[email].activeQueue, email);
+        await this.competitive.checkIsUserInCompetitive(this.queueList[email].activeQueue, email);
+        delete this.queueList[email];
+      }
+    } catch (e) {
+      console.log('Check user in queue error :', e);
     }
   }
 
@@ -121,12 +127,25 @@ export class ServerSocket {
     await this.competitive.gameScreenLoaded(clientParameters, socket.id);
   }
 
+  private async competitiveCorrectWord(socket: Socket, clientParameters: IMatcherFoundedData): Promise<void> {
+    await this.competitive.setCorrectWord(clientParameters, socket.id);
+  }
+
+  private async competitiveInCorrectWord(socket: Socket, clientParameters: IMatcherFoundedData): Promise<void> {
+    await this.competitive.setInCorrectWord(clientParameters, socket.id);
+  }
+
+  private async competitiveSetMistakeLetter(socket: Socket, clientParameters: ICompetitiveMistakeClientParameters): Promise<void> {
+    await this.competitive.setMistakeLetter(clientParameters, socket.id);
+  }
+
   private async getUserInformations(email: string): Promise<ISocketUser> {
     return await this.prisma.user.findUnique({
       where: {
         email,
       },
       select: {
+        id: true,
         email: true,
         username: true,
         win: true,
@@ -171,6 +190,15 @@ export class ServerSocket {
 
       //? Competitive game screen loaded event listener
       socket.on('competitive:game-screen-loaded', this.competitiveGameScreenLoaded.bind(this, socket));
+
+      //? Competitive correct word event listener
+      socket.on('competitive:correct-word', this.competitiveCorrectWord.bind(this, socket));
+
+      //? Competitive incorrect word event listener
+      socket.on('competitive:incorrect-word', this.competitiveInCorrectWord.bind(this, socket));
+
+      //? Competitive mistake letter event listener
+      socket.on('competitive:mistake-letter', this.competitiveSetMistakeLetter.bind(this, socket));
 
       //? Admin Log event listeners
       socket.on('admin:log-matcher-rooms', this.adminMatcherRooms.bind(this, socket));

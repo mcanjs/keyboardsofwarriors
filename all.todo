@@ -1,5 +1,10 @@
 ✘ Next.js authentication structure need to be changed @client @cancelled(23-07-19 02:08)
 ✔ Client-side admin shortcuts NEW UI @client @done(23-07-19 03:03)
 ✔ Admin and Premium feature need to be added @server @database @done(23-07-19 02:40)
-☐ Login page error actions @client
-☐ Login page yup validation @client
+✔ Login page error actions @client @done(23-07-28 21:56)
+☐ i18n will be added @client
+☐ Register feature @client @server
+✔ Login page yup validation @client @done(23-07-28 21:55)
+✔ Login page bug fix @client @done(23-07-30 20:41)
+✔ Competitive structure will be developed @started(23-07-30 20:41) @done(23-07-30 20:42) @lasted(1m26s)
+✔ Login page try limit will be added @started(23-07-22 03:41) @done(23-07-28 20:47) @lasted(6d17h6m27s)

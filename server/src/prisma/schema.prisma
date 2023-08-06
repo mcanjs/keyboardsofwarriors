@@ -10,6 +10,15 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model Matches {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  users     String[]
+  winnerId  String
+  loserId   String
+  matchDate DateTime @default(now())
+  matchLog  Json?
+}
+
 model Admin {
   id      String  @id @default(auto()) @map("_id") @db.ObjectId
   isAdmin Boolean @default(false)
