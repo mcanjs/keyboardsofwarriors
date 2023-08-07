@@ -38,6 +38,8 @@ export default function Competitive() {
     undefined
   );
   const [onlineUsers, setOnlineUsers] = useState<number>(0);
+  const [isWaitingServerStatus, setIsWaitingServerStatus] =
+    useState<boolean>(true);
 
   //? Queue states
   const [isQueueContinue, setIsQueueContinue] = useState<boolean>(false);
@@ -80,6 +82,7 @@ export default function Competitive() {
   useEffect(() => {
     function onConnect() {
       setIsServerOnline(true);
+      setIsWaitingServerStatus(false);
     }
 
     function onDisconnect() {
@@ -154,8 +157,11 @@ export default function Competitive() {
 
       //? Queue banned event listener
       socket.on("queue:banned", onQueueBanned);
-    } else if (typeof socket === "undefined") {
+    } else if (!socket?.connected) {
       setIsServerOnline(false);
+      setTimeout(() => {
+        setIsWaitingServerStatus(false);
+      }, 1000);
     }
 
     return () => {
@@ -287,21 +293,24 @@ export default function Competitive() {
               <div className="flex flex-row justify-between mt-4">
                 {isServerOnline ? (
                   <p className="inline-flex items-center gap-1">
-                    <span
-                      className={`${
-                        isServerOnline ? "bg-green-500" : "bg-red-500"
-                      } inline-block h-1.5 w-1.5 rounded-full`}
-                    ></span>
-                    <span
-                      className={`${
-                        isServerOnline ? "text-green-700" : "text-red-700"
-                      } text-xs font-medium`}
-                    >
-                      Server {isServerOnline ? "Online" : "Offline"}
+                    <span className="bg-green-500 inline-block h-1.5 w-1.5 rounded-full"></span>
+                    <span className="text-green-700 text-xs font-medium">
+                      Server Online
                     </span>
                   </p>
                 ) : (
-                  <div className="loading loading-ring loading-sm w-[16px]"></div>
+                  isWaitingServerStatus && (
+                    <div className="loading loading-ring loading-sm w-[16px]"></div>
+                  )
+                )}
+
+                {!isServerOnline && !isWaitingServerStatus && (
+                  <p className="inline-flex items-center gap-1">
+                    <span className="bg-red-500 inline-block h-1.5 w-1.5 rounded-full"></span>
+                    <span className="text-red-700 text-xs font-medium">
+                      Server Offline
+                    </span>
+                  </p>
                 )}
 
                 <p className="inline-flex items-center gap-1">
