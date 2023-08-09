@@ -33,7 +33,9 @@ export default function ResultTextScreen({ data, userId }: IProps) {
     //@ts-ignore
     for (let i = 0; i < Object.keys(data?.matchLog).length; i++) {
       //@ts-ignore
-      if (Object.keys(matchs)[i] !== `user${userId}`) return user = Object.keys(matchs)[i];
+      if (Object.keys(matchs)[i] !== `user${userId}`)
+        //@ts-ignore
+        return (user = Object.keys(matchs)[i]);
     }
     return user;
   };
