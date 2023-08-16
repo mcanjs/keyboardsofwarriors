@@ -1,10 +1,7 @@
-import ResultLottieScreen from '@/src/components/screens/result/animation.screen';
-
 import { prisma } from '@/src/libs/prisma';
 import { useAuth } from '@/src/hooks/authentication/useAuth';
 import ResultSummaryScreen from '@/src/components/screens/result/summary.screen';
 import { JWTPayload } from 'jose';
-import { PageProps } from '@/.next/types/app/layout';
 import ResultDetailScreen from '@/src/components/screens/result/detail.screen';
 import { Matches } from '@prisma/client';
 
@@ -39,7 +36,7 @@ async function getUsers(data: Matches | null) {
   return null;
 }
 
-export default async function ResultPage(pageProps: PageProps) {
+export default async function ResultPage(pageProps: any) {
   const auth = (await useAuth.fromServer()) ?? null;
   const data = await getData(pageProps.params.id, auth);
   const users = await getUsers(data);
