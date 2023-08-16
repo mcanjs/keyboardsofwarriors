@@ -1,47 +1,69 @@
-import ResultLottieScreen from "@/src/components/screens/result/lottie.screen";
-import { PageProps } from "@/.next/types/app/layout";
-import { prisma } from "@/src/libs/prisma";
-import { useAuth } from "@/src/hooks/authentication/useAuth";
-import ResultTextScreen from "@/src/components/screens/result/text.screen";
-import Link from "next/link";
+import ResultLottieScreen from '@/src/components/screens/result/animation.screen';
 
-async function getData(matchId: string) {
-  const isValid = new RegExp("^[0-9a-fA-F]{24}$").test(matchId);
+import { prisma } from '@/src/libs/prisma';
+import { useAuth } from '@/src/hooks/authentication/useAuth';
+import ResultSummaryScreen from '@/src/components/screens/result/summary.screen';
+import { JWTPayload } from 'jose';
+import { PageProps } from '@/.next/types/app/layout';
+import ResultDetailScreen from '@/src/components/screens/result/detail.screen';
+import { Matches } from '@prisma/client';
 
+async function getData(matchId: string, auth: JWTPayload | null) {
+  const isValid = new RegExp('^[0-9a-fA-F]{24}$').test(matchId);
+  const userId = auth?.id as string;
   if (isValid) {
-    return await prisma.matches.findUnique({
+    const match = await prisma.matches.findUnique({
       where: {
         id: matchId,
       },
     });
+
+    if (match?.users.includes(userId)) return match;
+
+    return null;
   }
+  return null;
+}
+
+async function getUsers(data: Matches | null) {
+  if (data) {
+    const users = await prisma.user.findMany({
+      where: {
+        id: { in: data.users },
+      },
+    });
+
+    return users;
+  }
+
   return null;
 }
 
 export default async function ResultPage(pageProps: PageProps) {
   const auth = (await useAuth.fromServer()) ?? null;
-  const data = await getData(pageProps.params.id);
+  const data = await getData(pageProps.params.id, auth);
+  const users = await getUsers(data);
 
   return (
-    <div className="max-w-lg flex-1 relative flex items-center justify-center mx-auto my-5">
-      <div className="mx-auto max-w-xl text-center">
-        {data !== null ? (
-          <>
-            <ResultLottieScreen data={data} userId={auth?.id as string} />
-            <ResultTextScreen data={data} userId={auth?.id as string} />
-          </>
-        ) : (
-          <div className="flex flex-col justify-center">
-            <p className="text-[32px] text-red-500 font-bold">
-              Match Not Found
-            </p>
-            <small>
-              The match you searched for was not found, please make sure you
-              have entered the correct match information.
-            </small>
+    <div className="container mx-auto">
+      {data !== null ? (
+        <div>
+          <div className="flex flex-col items-center mt-3 pb-3 border-b border-b-gray-600 md:flex-row md:items-start">
+            {/* <ResultLottieScreen data={data} userId={auth?.id as string} /> */}
+            <ResultSummaryScreen data={data} userId={auth?.id as string} />
           </div>
-        )}
-      </div>
+          <div>
+            <ResultDetailScreen data={data} userId={auth?.id as string} users={users} auth={auth} />
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col justify-center">
+          <p className="text-[32px] text-red-500 font-bold">Match Not Found</p>
+          <small>
+            The match you searched for was not found, please make sure you have entered the correct match information.
+          </small>
+        </div>
+      )}
     </div>
   );
 }

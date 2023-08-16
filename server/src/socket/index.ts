@@ -47,7 +47,7 @@ export class ServerSocket {
     }
   }
 
-  private async checkUserInQueue(email: string): Promise<void> {
+  private async checkUserInQueueOrCompetitive(email: string): Promise<void> {
     try {
       if (typeof this.queueList[email] !== 'undefined') {
         await this.matcher.kickUserFromMatcherRoom(this.queueList[email].activeQueue, email);
@@ -72,7 +72,8 @@ export class ServerSocket {
   private async checkUserBannedFromQueue(socket: Socket, user: ISocketUser): Promise<boolean> {
     const updatedUserData = await this.getUserInformations(user.email);
     const isHaveBan: boolean = await this.leaverDedector.checkIsHaveBan(updatedUserData.queueBan);
-    if (typeof user.queueBan && user.queueBan !== '' && isHaveBan) {
+
+    if (typeof updatedUserData.queueBan !== 'undefined' && updatedUserData.queueBan !== '' && isHaveBan) {
       socket.emit('queue:banned', { banTime: updatedUserData.queueBan, serverTime: new Date().toUTCString() });
       return true;
     }
@@ -170,7 +171,7 @@ export class ServerSocket {
 
       socket.on('disconnect', async () => {
         //? Remove online user statement
-        await this.checkUserInQueue(email as string);
+        await this.checkUserInQueueOrCompetitive(email as string);
 
         this.changeOnlineUserStatements('decrease');
         console.log('One user disconnected: ', email);

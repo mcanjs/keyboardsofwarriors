@@ -3,8 +3,13 @@
 ✔ Admin and Premium feature need to be added @server @database @done(23-07-19 02:40)
 ✔ Login page error actions @client @done(23-07-28 21:56)
 ☐ i18n will be added @client
-☐ Register feature @client @server
+✔ Register feature @client @server @done(23-08-14 15:44)
 ✔ Login page yup validation @client @done(23-07-28 21:55)
 ✔ Login page bug fix @client @done(23-07-30 20:41)
 ✔ Competitive structure will be developed @started(23-07-30 20:41) @done(23-07-30 20:42) @lasted(1m26s)
 ✔ Login page try limit will be added @started(23-07-22 03:41) @done(23-07-28 20:47) @lasted(6d17h6m27s)
+☐ Profile page will be added @client @started(23-08-14 18:05)
+☐ User dc to in game will be added structure @client @server
+☐ Profile -> matches page will be added @client
+☐ Private game structure @client @server
+☐ Admin dashboard @admin

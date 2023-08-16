@@ -1,9 +1,11 @@
-import Link from 'next/link';
+import HomeFeatureScreen from '../components/screens/home/feature.screen';
+import HomeHeroScreen from '../components/screens/home/hero.screen';
 
 export default function Home() {
   return (
-    <main>
-      <Link href="/matchmaker">Matchmaking</Link>
-    </main>
+    <>
+      <HomeHeroScreen />
+      <HomeFeatureScreen />
+    </>
   );
 }

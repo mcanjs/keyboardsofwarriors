@@ -1,4 +1,4 @@
-import { IGameLeagues } from '@/interfaces/game.interface';
+import { IGameLeagues } from '../interfaces/socket/game.interface';
 
 export default class MMR {
   public static generateMmrToString(mmr: number): IGameLeagues {

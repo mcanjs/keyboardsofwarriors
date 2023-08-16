@@ -9,10 +9,11 @@
     "lint": "next lint"
   },
   "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} seed.ts"
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} seed.ts",
+    "schema": "src/prisma/schema.prisma"
   },
   "dependencies": {
-    "@prisma/client": "^4.12.0",
+    "@prisma/client": "^5.1.1",
     "@reduxjs/toolkit": "^1.9.5",
     "@types/react": "18.0.31",
     "@types/react-dom": "18.0.11",
@@ -23,6 +24,7 @@
     "eslint": "8.37.0",
     "eslint-config-next": "13.2.4",
     "formik": "^2.4.2",
+    "framer-motion": "^10.15.2",
     "jose": "^4.14.4",
     "lottie-react": "^2.4.0",
     "next": "^13.4.12",
@@ -34,7 +36,9 @@
     "react-hot-toast": "^2.4.1",
     "react-icons": "^4.9.0",
     "react-redux": "^8.0.5",
+    "react-type-animation": "^3.1.0",
     "socket.io-client": "^4.6.1",
+    "swr": "^2.2.1",
     "universal-cookie": "^4.0.4",
     "utf-8-validate": "^5.0.10",
     "yup": "^1.2.0"
@@ -51,7 +55,9 @@
     "mongodb": "^4.15.0",
     "postcss": "^8.4.23",
     "postcss-import": "^15.1.0",
-    "prisma": "^4.12.0",
+    "prettier": "^3.0.1",
+    "prettier-plugin-tailwindcss": "^0.5.2",
+    "prisma": "^5.1.1",
     "tailwindcss": "^3.3.2",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4"

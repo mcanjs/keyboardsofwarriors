@@ -1,5 +1,5 @@
 export interface ISocketQueueStart {
-  activeLangauge: "en" | "tr";
+  activeLangauge: 'en' | 'tr';
 }
 
 export interface ICompetitiveIncorrectLetter {
@@ -10,6 +10,12 @@ export interface ICompetitiveIncorrectDetail {
   expectedLetter: string;
   writtenLetter: string;
   letterIndex: number;
+}
+
+export interface ICompetitiveGameDataStats {
+  corrects: number;
+  incorrects: number;
+  mistakes: ICompetitiveIncorrectLetter;
 }
 
 export interface ICompetitiveGameInformations {

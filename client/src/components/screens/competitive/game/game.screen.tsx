@@ -1,15 +1,16 @@
-"use client";
-import React, { KeyboardEvent, useEffect, useRef, useState } from "react";
-import CompetitiveStat from "../../../stats/game.stats";
-import GeneralCountdown from "../../../countdown/general.countdown";
-import { useRouter } from "next/navigation";
-import { Socket } from "socket.io-client";
-import { IMatcherRoomData } from "@/src/interfaces/socket/matcher.interface";
+'use client';
+import React, { KeyboardEvent, useEffect, useRef, useState } from 'react';
+import CompetitiveStat from '../../../stats/game.stats';
+import GeneralCountdown from '../../../countdown/general.countdown';
+import { useRouter } from 'next/navigation';
+import { Socket } from 'socket.io-client';
+import { IMatcherRoomData } from '@/src/interfaces/socket/matcher.interface';
 import {
   ICompetitiveGameInformations,
   ICompetitiveGameInformationsTimeouts,
-} from "@/src/interfaces/socket/competitive.interface";
-import CompetitiveGameFinished from "./finish.screen";
+} from '@/src/interfaces/socket/competitive.interface';
+import CompetitiveGameFinished from './finish.screen';
+import { toast } from 'react-hot-toast';
 
 interface IProps {
   socket: Socket;
@@ -24,9 +25,7 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
   const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
   const [isCountdownAccess, setIsCountdownAccess] = useState<boolean>(false);
   const [isGameFinished, setIsGameFinished] = useState<boolean>(false);
-  const [timeouts, setTimeouts] = useState<
-    undefined | ICompetitiveGameInformationsTimeouts
-  >(undefined);
+  const [timeouts, setTimeouts] = useState<undefined | ICompetitiveGameInformationsTimeouts>(undefined);
 
   //? Word states
   const [words, setWords] = useState<string[]>([]);
@@ -35,8 +34,7 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
   const [incorrectWord, setIncorrectWord] = useState<number>(0);
   const [opponentCorrects, setOpponentCorrects] = useState<number>(0);
   const [totalWordWidthFromRow, setTotalWordWidthFromRow] = useState<number>(0);
-  const [totalSlidedWordContainer, setTotalSlidedWordContainer] =
-    useState<number>(0);
+  const [totalSlidedWordContainer, setTotalSlidedWordContainer] = useState<number>(0);
 
   //? Refs
   const inputRef = useRef<HTMLInputElement>(null);
@@ -47,7 +45,7 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
   const checkWord = (e: KeyboardEvent): void => {
     if (!isGameStarted) return;
 
-    const isPressedSpace = e.key === " ";
+    const isPressedSpace = e.key === ' ';
     const target = e.target as HTMLInputElement;
 
     if (!isPressedSpace) {
@@ -57,18 +55,16 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
     if (isPressedSpace && inputRef.current !== null) {
       checkRow();
       removeActiveWordClassList();
-      if (
-        wordRef.current[activeWord].innerText === target.value.split(" ")[0]
-      ) {
-        wordRef.current[activeWord].classList.add("bg-green-600");
+      if (wordRef.current[activeWord].innerText === target.value.split(' ')[0]) {
+        wordRef.current[activeWord].classList.add('bg-green-600');
         setCorrectWord((old) => old + 1);
-        socket.emit("competitive:correct-word", queueData);
+        socket.emit('competitive:correct-word', queueData);
       } else {
-        wordRef.current[activeWord].classList.add("bg-red-600");
+        wordRef.current[activeWord].classList.add('bg-red-600');
         setIncorrectWord((old) => old + 1);
-        socket.emit("competitive:incorrect-word", queueData);
+        socket.emit('competitive:incorrect-word', queueData);
       }
-      inputRef.current.value = target.value.split(" ")[1];
+      inputRef.current.value = target.value.split(' ')[1];
       setActiveWord((old) => old + 1);
       setActiveWordClassList();
     }
@@ -80,8 +76,7 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
     word: string,
     writtenLastLetter: string
   ) => {
-    console.log(targetLastLetter, writtenLastLetter);
-    socket.emit("competitive:mistake-letter", {
+    socket.emit('competitive:mistake-letter', {
       word,
       mistake: {
         expectedLetter: targetLastLetter,
@@ -99,26 +94,15 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
     const targetLastLetter = word.innerText.charAt(writtenLetterIndex);
 
     if (writtenLastLetter !== targetLastLetter && targetLastLetter) {
-      setMistakeLetter(
-        writtenLetterIndex,
-        targetLastLetter,
-        word.innerText,
-        writtenLastLetter
-      );
+      setMistakeLetter(writtenLetterIndex, targetLastLetter, word.innerText, writtenLastLetter);
     }
   };
 
   const checkRow = () => {
     const activeWordWidth = wordRef.current[activeWord].clientWidth;
 
-    if (
-      wordContainerRef.current &&
-      activeWordWidth + totalWordWidthFromRow >
-        wordContainerRef.current.clientWidth
-    ) {
-      wordContainerRef.current.style.transform = `translateY(-${
-        (totalSlidedWordContainer + 1) * 32
-      }px)`;
+    if (wordContainerRef.current && activeWordWidth + totalWordWidthFromRow > wordContainerRef.current.clientWidth) {
+      wordContainerRef.current.style.transform = `translateY(-${(totalSlidedWordContainer + 1) * 32}px)`;
       setTotalSlidedWordContainer((old) => old + 1);
       setTotalWordWidthFromRow(0);
     } else {
@@ -128,15 +112,15 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
 
   const setActiveWordClassList = () => {
     if (wordRef.current[activeWord + 1]) {
-      wordRef.current[activeWord + 1].classList.add("bg-gray-100");
-      wordRef.current[activeWord + 1].classList.add("text-black");
+      wordRef.current[activeWord + 1].classList.add('bg-gray-100');
+      wordRef.current[activeWord + 1].classList.add('text-black');
     } else {
       //TODO: All words completed..
     }
   };
 
   const removeActiveWordClassList = () => {
-    wordRef.current[activeWord].classList.remove("bg-gray-100");
+    wordRef.current[activeWord].classList.remove('bg-gray-100');
   };
 
   const refCreator = (el: HTMLSpanElement | null, i: number) => {
@@ -169,34 +153,40 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
       setIsGameFinished(true);
     }
 
-    function onRedirectPlayers(matchId: string) {
-      router.push(`/result/${matchId}`);
+    function onOpponentLeft() {
+      toast.success('The opponent left the match');
+      setIsGameStarted(false);
+      setIsGameFinished(true);
     }
 
-    if (socket && typeof socket !== "undefined") {
+    function onRedirectPlayers(matchId: string) {
+      window.location.href = `/result/${matchId}`;
+    }
+
+    if (socket && typeof socket !== 'undefined') {
       //? Competitive game screen loaded emitter
-      socket.emit("competitive:game-screen-loaded", queueData);
+      socket.emit('competitive:game-screen-loaded', queueData);
 
       //? Competitive fire start countdown event listener
-      socket.on("competitive:game-informations", onGameInformations);
+      socket.on('competitive:game-informations', onGameInformations);
 
       //? Competitive pre countdown startable event listener
-      socket.on("competitive:pre-countdown-startable", onPreCountdownStartable);
+      socket.on('competitive:pre-countdown-startable', onPreCountdownStartable);
 
       //? Competitive game started event listener
-      socket.on("competitive:game-started", onGameStarted);
+      socket.on('competitive:game-started', onGameStarted);
 
       //? Competitive update opponent corrects event listener
-      socket.on(
-        "competitive:update-opponent-corrects",
-        onUpdateOpponentCorrects
-      );
+      socket.on('competitive:update-opponent-corrects', onUpdateOpponentCorrects);
 
       //? Competitive game finished event listener
-      socket.on("competitive:game-ended", onGameFinished);
+      socket.on('competitive:game-ended', onGameFinished);
+
+      //? Competitive opponent left event listener
+      socket.on('competitive:opponent-left', onOpponentLeft);
 
       //? Competitive redirect players event listener
-      socket.on("competitive:redirect-players", onRedirectPlayers);
+      socket.on('competitive:redirect-players', onRedirectPlayers);
     }
   }, [socket]);
 
@@ -206,13 +196,9 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
 
   return (
     <div className="relative">
-      <div className={!isGameStarted ? "relative blur select-none" : ""}>
-        <CompetitiveStat
-          correct={correctWord}
-          incorrect={incorrectWord}
-          opponentCorrects={opponentCorrects}
-        />
-        {typeof timeouts !== "undefined" && (
+      <div className={!isGameStarted ? 'relative blur select-none' : ''}>
+        <CompetitiveStat correct={correctWord} incorrect={incorrectWord} opponentCorrects={opponentCorrects} />
+        {typeof timeouts !== 'undefined' && (
           <div className="border-t border-gray-800 p-3">
             <GeneralCountdown
               seconds={timeouts.finish / 1000}
@@ -228,9 +214,7 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
               {words.length > 0 ? (
                 words.map((word, wIndex) => (
                   <span
-                    className={`py-1 px-2 ${
-                      0 === wIndex ? "bg-gray-100 text-black" : ""
-                    } select-none`}
+                    className={`py-1 px-2 ${0 === wIndex ? 'bg-gray-100 text-black' : ''} select-none`}
                     key={wIndex}
                     ref={(el) => refCreator(el, wIndex)}
                     onCopy={() => {
@@ -248,23 +232,16 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
             </div>
           </div>
           <div className="w-full">
-            <input
-              ref={inputRef}
-              type="text"
-              className="w-full p-1 rounded-bl rounded-br"
-              onKeyUp={checkWord}
-            />
+            <input ref={inputRef} type="text" className="w-full p-1 rounded-bl rounded-br" onKeyUp={checkWord} />
           </div>
         </div>
       </div>
       {isGameFinished && !isGameStarted && <CompetitiveGameFinished />}
-      {!isGameStarted &&
-        typeof timeouts !== "undefined" &&
-        isCountdownAccess && (
-          <div className="absolute top-2/4 left-2/4 -translate-x-1/2 -translate-y-1/2 text-2xl">
-            <GeneralCountdown seconds={timeouts.startCountdown / 1000} />
-          </div>
-        )}
+      {!isGameStarted && typeof timeouts !== 'undefined' && isCountdownAccess && (
+        <div className="absolute top-2/4 left-2/4 -translate-x-1/2 -translate-y-1/2 text-2xl">
+          <GeneralCountdown seconds={timeouts.startCountdown / 1000} />
+        </div>
+      )}
     </div>
   );
 }

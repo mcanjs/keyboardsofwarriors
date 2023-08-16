@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+  margin-top: 80px;
+}
+
 .loader {
   animation: rotate 2.625s linear infinite;
   width: 3rem;
@@ -18,4 +22,13 @@
   animation: dash 1.5s ease-in-out infinite;
   stroke-linecap: round;
   stroke: #4c40f5;
+}
+
+.indicator {
+  &:before {
+    content: '●';
+    line-height: 24px;
+    margin: 0 5px;
+    font-size: 12px;
+  }
 }

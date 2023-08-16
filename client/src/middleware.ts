@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { isAuthPage, logout, verifyJwtToken } from "./utils/auth";
+import { NextRequest, NextResponse } from 'next/server';
+import { isAuthPage, logout, verifyJwtToken } from './utils/auth';
 
 export async function middleware(request: NextRequest) {
   const { url, nextUrl, cookies } = request;
-  const { value: token } = cookies.get("token") ?? { value: null };
+  const { value: token } = cookies.get('token') ?? { value: null };
 
   const hasVerifiedToken = token && (await verifyJwtToken(token));
   const isAuthPageRequested = isAuthPage(nextUrl.pathname);
@@ -14,11 +14,11 @@ export async function middleware(request: NextRequest) {
     if (!hasVerifiedToken) {
       return NextResponse.next();
     }
-    return NextResponse.redirect(new URL("/", url));
+    return NextResponse.redirect(new URL('/', url));
   }
 
   if (!hasVerifiedToken) {
-    searchParams.set("next", nextUrl.pathname);
+    searchParams.set('next', nextUrl.pathname);
     return NextResponse.redirect(new URL(`/login?${searchParams}`, url));
   }
 
@@ -26,5 +26,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/login", "/matchmaker", "/competitive"],
+  matcher: ['/login', '/matchmaker', '/competitive', '/result/:path*', '/profile'],
 };

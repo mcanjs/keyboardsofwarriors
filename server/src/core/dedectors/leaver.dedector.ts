@@ -6,6 +6,6 @@ export default class LeaverDedector {
 
   public async checkIsHaveBan(banDate: string): Promise<boolean> {
     const now = new Date();
-    return !(now > new Date(banDate));
+    return new Date(banDate) > now;
   }
 }

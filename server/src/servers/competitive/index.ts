@@ -14,11 +14,13 @@ import { IGameLeagues } from '@/interfaces/game.interface';
 import { logger } from '@/utils/logger';
 import { generateCompetitiveGameInformationsObject } from '@/core/generators/object.generator';
 import { PrismaClient } from '@prisma/client';
+import MMRCalculator from '@/core/mmr/calculator';
 
 export default class Competitive {
   public competitiveRooms = this.initializeCompetitive();
   private prisma = new PrismaClient();
   private io: SocketIOServer;
+  private mmrCalculator = new MMRCalculator();
   private states = {
     timeouts: {
       connection: 10001,
@@ -154,7 +156,22 @@ export default class Competitive {
     const room = this.competitiveRooms[matchData.queueLanguage][rank][matchData.roomId];
 
     if (room) {
-      //TODO
+      const isHaveUser = room.users.filter(user => user.email === email);
+
+      if (isHaveUser.length > 0) {
+        let winnerId = '';
+        for (let i = 0; i < room.users.length; i++) {
+          const user = room.users[i];
+
+          if (user.email !== email) {
+            const socket = this.io.sockets.sockets.get(user.socketId);
+            winnerId = user.userId;
+            socket.emit('competitive:opponent-left');
+          }
+        }
+
+        await this.gameFinishedForOpponentLeft(matchData, winnerId, isHaveUser[0].userId);
+      }
     }
   }
 
@@ -214,6 +231,8 @@ export default class Competitive {
         data: {
           winnerId,
           loserId,
+          winnerPoint: winnerId !== '' ? await this.mmrCalculator.winnerLP(winnerId) : 0,
+          loserPoint: loserId !== '' ? await this.mmrCalculator.loserLP(loserId) : 0,
           users: await this.getCompetitiveUserIds(matchData),
           matchLog: await this.getCompetitiveMatchLog(matchData),
         },
@@ -228,6 +247,31 @@ export default class Competitive {
     }
   }
 
+  private async gameFinishedForOpponentLeft(matchData: IMatcherFoundedData, winnerId: string, loserId: string): Promise<void> {
+    const rank = MMR.generateMmrToString(matchData.rank);
+    const room: ICompetitiveRoom = this.competitiveRooms[matchData.queueLanguage][rank][matchData.roomId];
+
+    if (room && !room.isGameEnded) {
+      const match = await this.prisma.matches.create({
+        data: {
+          winnerId,
+          loserId,
+          winnerPoint: winnerId !== '' ? await this.mmrCalculator.winnerLP(winnerId) : 0,
+          loserPoint: loserId !== '' ? await this.mmrCalculator.loserLP(loserId) : 0,
+          users: await this.getCompetitiveUserIds(matchData),
+          matchLog: await this.getCompetitiveMatchLog(matchData),
+        },
+      });
+
+      room.isGameEnded = true;
+      this.io.to(matchData.roomId).emit('competitive:redirect-players', match.id);
+
+      await this.deleteRoom(matchData);
+    } else {
+      logger.error('[FINISHED FOR OPPONENT LEFT] : Competitive game not finished because not founding related room');
+    }
+  }
+
   private async deleteRoom(matchData: IMatcherFoundedData): Promise<void> {
     const rank = MMR.generateMmrToString(matchData.rank);
     delete this.competitiveRooms[matchData.queueLanguage][rank][matchData.roomId];
@@ -238,20 +282,30 @@ export default class Competitive {
     const room: ICompetitiveRoom = this.competitiveRooms[matchData.queueLanguage][rank][matchData.roomId];
     let winnerId = '';
     let loserId = '';
+    let length = room.users.length;
 
-    if (room.users[0].gameData.stats.corrects > room.users[1].gameData.stats.corrects) {
-      winnerId = room.users[0].userId;
-      loserId = room.users[1].userId;
-    } else if (room.users[0].gameData.stats.corrects === room.users[1].gameData.stats.corrects) {
-      if (room.users[0].gameData.stats.incorrects > room.users[1].gameData.stats.incorrects) {
-        winnerId = room.users[1].userId;
-        loserId = room.users[0].userId;
+    while (length--) {
+      const user = room.users[length];
+      const prevUser = room.users[length - 1];
+      if (typeof prevUser === 'undefined') break;
+
+      if (user.gameData.stats.corrects > prevUser.gameData.stats.corrects) {
+        winnerId = user.userId;
+        loserId = prevUser.userId;
+      } else if (user.gameData.stats.corrects === prevUser.gameData.stats.corrects) {
+        if (user.gameData.stats.incorrects < prevUser.gameData.stats.incorrects) {
+          winnerId = user.userId;
+          loserId = prevUser.userId;
+        } else if (user.gameData.stats.incorrects === user.gameData.stats.incorrects) {
+          //? do nothing
+        } else {
+          winnerId = prevUser.userId;
+          loserId = user.userId;
+        }
+      } else {
+        winnerId = prevUser.userId;
+        loserId = user.userId;
       }
-      winnerId = room.users[0].userId;
-      loserId = room.users[1].userId;
-    } else {
-      winnerId = room.users[1].userId;
-      loserId = room.users[0].userId;
     }
 
     return { winnerId, loserId };

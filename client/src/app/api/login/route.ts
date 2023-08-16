@@ -1,8 +1,8 @@
-import { prisma } from "@/src/libs/prisma";
-import { getJwtSecretKey } from "@/src/utils/auth";
-import { compare } from "bcrypt";
-import { SignJWT } from "jose";
-import { NextRequest, NextResponse } from "next/server";
+import { prisma } from '@/src/libs/prisma';
+import { generateToken, getJwtSecretKey } from '@/src/utils/auth';
+import { compare } from 'bcrypt';
+import { JWTPayload, SignJWT } from 'jose';
+import { NextRequest, NextResponse } from 'next/server';
 
 async function userIsAdmin(adminId: string): Promise<boolean> {
   const user = await prisma.admin.findUnique({
@@ -27,15 +27,12 @@ export async function POST(request: NextRequest) {
   });
 
   if (user) {
-    const isPasswordMatching: boolean = await compare(
-      body.password,
-      user.password
-    );
+    const isPasswordMatching: boolean = await compare(body.password, user.password);
     if (!isPasswordMatching)
       return NextResponse.json(
         {
           success: false,
-          message: "Password is not matching",
+          message: 'Password is not matching',
         },
         {
           status: 409,
@@ -43,15 +40,13 @@ export async function POST(request: NextRequest) {
       );
 
     const isAdmin = await userIsAdmin(user.adminId);
-    const token = await new SignJWT({
+    const tokenData: JWTPayload = {
       id: user.id,
       email: body.email,
+      username: user.username,
       isAdmin,
-    })
-      .setProtectedHeader({ alg: "HS256" })
-      .setIssuedAt()
-      .setExpirationTime("1d")
-      .sign(getJwtSecretKey());
+    };
+    const token = await generateToken(tokenData);
 
     const response = NextResponse.json(
       {
@@ -63,9 +58,9 @@ export async function POST(request: NextRequest) {
     );
 
     response.cookies.set({
-      name: "token",
+      name: 'token',
       value: token,
-      path: "/",
+      path: '/',
     });
 
     return response;
@@ -73,7 +68,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message: "User not found",
+        message: 'User not found',
       },
       {
         status: 409,

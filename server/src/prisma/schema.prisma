@@ -3,7 +3,7 @@
 
 datasource db {
   provider = "mongodb"
-  url      = "mongodb+srv://mehmetcankizilyer:luPctBuSZy5VxtpH@cluster0.1ffdtl3.mongodb.net/test"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
@@ -11,12 +11,14 @@ generator client {
 }
 
 model Matches {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  users     String[]
-  winnerId  String
-  loserId   String
-  matchDate DateTime @default(now())
-  matchLog  Json?
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  users       String[]
+  winnerId    String
+  loserId     String
+  winnerPoint BigInt
+  loserPoint  BigInt
+  matchDate   DateTime @default(now())
+  matchLog    Json?
 }
 
 model Admin {
@@ -32,16 +34,17 @@ model Premium {
 }
 
 model User {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  email     String  @unique
-  username  String  @unique
-  win       Int     @default(0)
-  lose      Int     @default(0)
-  rank      Int     @default(0)
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  username  String   @unique
+  win       Int      @default(0)
+  lose      Int      @default(0)
+  rank      Int      @default(0)
   password  String
-  queueBan  String
-  premium   Premium @relation(fields: [premiumId], references: [id])
-  premiumId String  @db.ObjectId
-  admin     Admin   @relation(fields: [adminId], references: [id])
-  adminId   String  @db.ObjectId
+  queueBan  String   @default("")
+  premium   Premium  @relation(fields: [premiumId], references: [id])
+  premiumId String   @db.ObjectId
+  admin     Admin    @relation(fields: [adminId], references: [id])
+  adminId   String   @db.ObjectId
+  banned    DateTime @default(now())
 }

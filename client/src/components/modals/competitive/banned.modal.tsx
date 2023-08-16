@@ -1,11 +1,6 @@
 "use client";
 
-import { useAppDispatch, useAppSelector } from "@/src/hooks/redux/hook";
-import { changeIsUserAccepted } from "@/src/redux/features/matchmaker/matchmaker.slice";
-import {
-  changeCanPlay,
-  changeSoundType,
-} from "@/src/redux/features/sounder/sounder.slice";
+
 import { useEffect, useState } from "react";
 
 interface IProps {
@@ -17,7 +12,6 @@ interface IProps {
 export default function CompetitiveBannedModal(props: IProps) {
   //? States
   const [seconds, setSeconds] = useState<number>(props.seconds);
-  const [soundCanPlay, setSoundCanPlay] = useState<boolean>(true);
 
   //? Effects
   useEffect(() => {
