@@ -107,6 +107,7 @@ export default async function Profile() {
             {matches.length > 0 &&
               matches.map((match, index) => (
                 <div
+                  key={index}
                   className={`${
                     matches.length - 1 !== index ? 'border-b border-b-slate-700' : ''
                   } bg-base-200 collapse collapse-arrow rounded-none`}
