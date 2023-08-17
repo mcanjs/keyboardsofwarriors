@@ -55,7 +55,7 @@ export default function HomeHeroScreen() {
         className="hero min-h-[calc(100vh-80px)] bg-base-100"
       >
         <div className="container mx-auto">
-          <div className="hero-content flex-col text-center">
+          <div className="hero-content flex-col text-center mx-auto">
             <div className="max-w-[85%]">
               <HomeHeroAnimationScreen />
             </div>
