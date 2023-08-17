@@ -25,6 +25,7 @@ export class ServerSocket {
       cors: {
         origin: '*',
       },
+      transports: ['websocket'],
     });
     this.competitive = new Competitive(this.io);
     this.matcher = new Matcher(this.io, this.competitive);
