@@ -25,6 +25,7 @@ export class ServerSocket {
     this.io = new SocketIOServer(this.server, {
       cors: {
         origin: ['https://keyboardsofwarriors.com', 'https://admin.socket.io'],
+        credentials: true,
       },
       transports: ['websocket', 'polling'],
     });
