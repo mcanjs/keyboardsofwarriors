@@ -8,8 +8,8 @@
 ✔ Login page bug fix @client @done(23-07-30 20:41)
 ✔ Competitive structure will be developed @started(23-07-30 20:41) @done(23-07-30 20:42) @lasted(1m26s)
 ✔ Login page try limit will be added @started(23-07-22 03:41) @done(23-07-28 20:47) @lasted(6d17h6m27s)
-☐ Profile page will be added @client @started(23-08-14 18:05)
-☐ User dc to in game will be added structure @client @server
-☐ Profile -> matches page will be added @client
+✔ Profile page will be added @client @started(23-08-14 18:05) @done(23-08-18 04:31) @lasted(3d10h26m7s)
+✔ User dc to in game will be added structure @client @server @done(23-08-18 04:31)
+✔ Profile -> matches page will be added @client @done(23-08-18 04:31)
 ☐ Private game structure @client @server
 ☐ Admin dashboard @admin

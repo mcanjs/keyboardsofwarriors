@@ -10,6 +10,7 @@ import LeaverDedector from '@/core/dedectors/leaver.dedector';
 import Competitive from '@/servers/competitive';
 import { generateSocketQueueListDataObject } from '@/core/generators/object.generator';
 import { ICompetitiveMistakeClientParameters } from '@/interfaces/competitive.interface';
+import { instrument } from '@socket.io/admin-ui';
 export class ServerSocket {
   private io: SocketIOServer;
   public server: http.Server;
@@ -23,12 +24,21 @@ export class ServerSocket {
     this.server = http.createServer(appServer);
     this.io = new SocketIOServer(this.server, {
       cors: {
-        origin: '*',
+        origin: ['https://keyboardsofwarriors.com', 'https://admin.socket.io'],
       },
       transports: ['websocket', 'polling'],
     });
     this.competitive = new Competitive(this.io);
     this.matcher = new Matcher(this.io, this.competitive);
+
+    //? Socket IO Admin
+    instrument(this.io, {
+      auth: {
+        type: 'basic',
+        username: 'gmcann',
+        password: '$2a$12$.QYs2oOdpYdy91qEgaQXcOB6jAKnPcWcSzlfjKrWfSVRQy423CiPu',
+      },
+    });
 
     this.connection();
   }
