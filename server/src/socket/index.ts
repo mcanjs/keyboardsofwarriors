@@ -38,6 +38,7 @@ export class ServerSocket {
         username: 'gmcann',
         password: '$2a$12$.QYs2oOdpYdy91qEgaQXcOB6jAKnPcWcSzlfjKrWfSVRQy423CiPu',
       },
+      mode: (process.env.NODE_ENV as 'production' | 'development') || 'development',
     });
 
     this.connection();
