@@ -23,13 +23,14 @@ export default function Header() {
     <div className="navbar w-full h-[80px] fixed top-0 left-0 z-[1] flex-wrap gap-1 p-0 bg-base-200 md:flex-nowrap md:flex-row ">
       <div className="container mx-auto">
         <div
-          className={`flex flex-1 basis-1/2 justify-center ${
+          className={`flex flex-1 basis-1/2 justify-center items-center mr-auto p-3 ${
             !isLoading && auth ? 'md:basis-1/3' : 'md:basis-2/3'
-          } md:justify-start p-3`}
+          } md:justify-start`}
         >
-          <Link href="/" className="mr-auto text-xs md:text-sm">
+          <Link href="/" className="mr-2 text-xs md:text-sm">
             Keyboards of Warriors
           </Link>
+          <span className="text-gray-600 font-light">BETA</span>
         </div>
         <div className="flex-1 flex basis-1/2 md:basis-1/3 p-3">
           <motion.div

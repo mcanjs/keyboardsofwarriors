@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { RiAtLine, RiEyeLine } from 'react-icons/ri';
+import { RiAtLine, RiEyeLine, RiEyeOffLine } from 'react-icons/ri';
 import { Loader } from '@/src/components/loader';
 import { toast } from 'react-hot-toast';
 import * as Yup from 'yup';
@@ -17,6 +17,7 @@ export default function Login() {
   const guard = new LoginGuard();
 
   const passwordInput = useRef<HTMLInputElement>(null);
+  const [passwordInputType, setPasswordInputType] = useState<'text' | 'password'>('password');
   const [guardLoad, setGuardLoad] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isBlocked, setIsBlocked] = useState<boolean>(false);
@@ -152,20 +153,31 @@ export default function Login() {
                 />
 
                 <span className="absolute inset-y-0 end-0 grid place-content-center px-4">
-                  <RiEyeLine
-                    className={`${
-                      errors.password && touched.password ? 'text-red-500' : ''
-                    } h-4 w-4 text-gray-400 cursor-pointer`}
-                    onClick={() => {
-                      if (passwordInput.current) {
-                        if (passwordInput.current.type === 'text') {
-                          passwordInput.current.type = 'password';
-                        } else {
+                  {passwordInputType === 'password' ? (
+                    <RiEyeLine
+                      className={`${
+                        errors.password && touched.password ? 'text-red-500' : ''
+                      } h-4 w-4 text-gray-400 cursor-pointer`}
+                      onClick={() => {
+                        if (passwordInput.current) {
                           passwordInput.current.type = 'text';
+                          setPasswordInputType('text');
                         }
-                      }
-                    }}
-                  />
+                      }}
+                    />
+                  ) : (
+                    <RiEyeOffLine
+                      className={`${
+                        errors.password && touched.password ? 'text-red-500' : ''
+                      } h-4 w-4 text-gray-400 cursor-pointer`}
+                      onClick={() => {
+                        if (passwordInput.current) {
+                          passwordInput.current.type = 'password';
+                          setPasswordInputType('password');
+                        }
+                      }}
+                    />
+                  )}
                 </span>
               </div>
               {errors.password && touched.password && <span className="text-sm text-red-500">{errors.password}</span>}

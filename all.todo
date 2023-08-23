@@ -13,7 +13,10 @@
 ✔ Profile -> matches page will be added @client @done(23-08-18 04:31)
 ✔ Socket.io structure will be changed to namespaces @server @started(23-08-18 16:13) @done(23-08-20 01:03) @lasted(1d8h50m5s)
 ☐ Private game structure @client @server
+✔ BETA badge will be added next to logo @client @started(23-08-24 00:43) @done(23-08-24 00:54) @lasted(11m16s)
 ✔ Admin dashboard @admin @done(23-08-18 05:08)
 ✔ In competitive when user change to tap countdown not increase @bug @client @started(23-08-18 15:18) @done(23-08-18 16:12) @lasted(54m41s)
 ✔ Forgot Password structure @client @server @started(23-08-21 02:18) @done(23-08-23 05:49) @lasted(2d3h31m15s)
-☐ Email Verification structure @client @server
+✔ Email Verification structure @client @server @done(23-08-24 00:41)
+☐ When game starting to auto focus key input @client
+✔ Footer placeholder text will be changed @client @done(23-08-24 01:20)

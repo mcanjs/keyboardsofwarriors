@@ -11,15 +11,16 @@ import { DataStoredInToken, TokenData } from '@interfaces/auth.interface';
 export class AuthService {
   public users = new PrismaClient().user;
 
-  public async signup(userData: CreateUserDto): Promise<User> {
-    const findUser: User = await this.users.findUnique({ where: { email: userData.email } });
-    if (findUser) throw new HttpException(409, `This email ${userData.email} already exists`);
+  public async signup(userData: CreateUserDto, verificationCode: string): Promise<User> {
+    const findUser: User = await this.users.findUnique({ where: { email: userData.email, username: userData.username } });
+    if (findUser) throw new HttpException(409, `User already exists`);
 
     const hashedPassword = await hash(userData.password, 10);
     const createUserData: Promise<User> = this.users.create({
       data: {
         ...userData,
         password: hashedPassword,
+        verificationCode,
         queueBan: '',
         premium: {
           create: {

@@ -1,1 +1,1 @@
-export const AUTH_PAGES = ['/login', '/signup', '/forgot-password'];
+export const AUTH_PAGES = ['/login', '/signup', '/forgot-password', '/reset-password', '/verification'];

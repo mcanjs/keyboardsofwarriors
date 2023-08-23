@@ -15,7 +15,6 @@ export class CreateUserDto {
   @MinLength(5)
   @MaxLength(12)
   public username: string;
-  // win, lose, rank, queueBan
 }
 
 export class CheckUserDto {
@@ -27,6 +26,14 @@ export class CheckUserDto {
   @MinLength(9)
   @MaxLength(32)
   public password: string;
+}
+
+export class CheckUserVerifyEmailDto {
+  @IsString()
+  public token: string;
+
+  @IsMongoId()
+  public userId: string;
 }
 
 export class CheckUserEmailDto {

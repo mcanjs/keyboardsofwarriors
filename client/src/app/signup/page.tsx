@@ -3,17 +3,18 @@
 import { Loader } from '@/src/components/loader';
 import { useFormik } from 'formik';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
-import { RiAtLine, RiEyeLine, RiUser2Line } from 'react-icons/ri';
+import { RiAtLine, RiEyeLine, RiEyeOffLine, RiUser2Line } from 'react-icons/ri';
 import * as Yup from 'yup';
 
 export default function Signup() {
-  const params = useSearchParams();
+  const router = useRouter();
   const passwordInput = useRef<HTMLInputElement>(null);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [passwordInputType, setPasswordInputType] = useState<'password' | 'text'>('password');
 
   const schema = Yup.object().shape({
     email: Yup.string().required('Email is a required field').email(),
@@ -23,7 +24,7 @@ export default function Signup() {
         /^[A-Za-z ]*$/,
         'You can only use alphabetical letters in the username field. Numbers or special symbols cannot be used.'
       )
-      .min(6, 'Username must be at least 6 characters')
+      .min(5, 'Username must be at least 5 characters')
       .max(12, 'Username must be at most 12 characters'),
     password: Yup.string()
       .required('Password is a required field')
@@ -41,23 +42,30 @@ export default function Signup() {
     validationSchema: schema,
 
     // Handle form submission
-    onSubmit: async ({ email, username, password }) => {
+    onSubmit: async ({ email, username, password }, { resetForm }) => {
       setIsLoading(true);
 
       if (typeof email !== 'undefined' && typeof password !== 'undefined') {
-        const response = await fetch('/api/signup', {
+        await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/signup`, {
           method: 'POST',
           body: JSON.stringify({ email, username, password }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
         })
-          .then((res) => res.json())
+          .then(async (res) => {
+            const response = await res.json();
+            if (res.status !== 200) {
+              setIsLoading(false);
+              toast.error(response.message);
+            } else {
+              setIsLoading(false);
+              toast.success(response.message);
+            }
+
+            resetForm();
+          })
           .catch((error) => console.log(error));
-        if (response.success) {
-          const nextUrl = params?.get('next');
-          window.location.href = nextUrl || '/';
-        } else {
-          setIsLoading(false);
-          toast.error(response.message);
-        }
       }
     },
   });
@@ -142,20 +150,31 @@ export default function Signup() {
               />
 
               <span className="absolute inset-y-0 end-0 grid place-content-center px-4">
-                <RiEyeLine
-                  className={`${
-                    errors.password && touched.password ? 'text-red-500' : ''
-                  } h-4 w-4 text-gray-400 cursor-pointer`}
-                  onClick={() => {
-                    if (passwordInput.current) {
-                      if (passwordInput.current.type === 'text') {
-                        passwordInput.current.type = 'password';
-                      } else {
+                {passwordInputType === 'password' ? (
+                  <RiEyeLine
+                    className={`${
+                      errors.password && touched.password ? 'text-red-500' : ''
+                    } h-4 w-4 text-gray-400 cursor-pointer`}
+                    onClick={() => {
+                      if (passwordInput.current) {
                         passwordInput.current.type = 'text';
+                        setPasswordInputType('text');
                       }
-                    }
-                  }}
-                />
+                    }}
+                  />
+                ) : (
+                  <RiEyeOffLine
+                    className={`${
+                      errors.password && touched.password ? 'text-red-500' : ''
+                    } h-4 w-4 text-gray-400 cursor-pointer`}
+                    onClick={() => {
+                      if (passwordInput.current) {
+                        passwordInput.current.type = 'password';
+                        setPasswordInputType('password');
+                      }
+                    }}
+                  />
+                )}
               </span>
             </div>
             {errors.password && touched.password && <span className="text-sm text-red-500">{errors.password}</span>}

@@ -18,10 +18,24 @@ export class AuthController {
   public signUp = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userData: User = req.body;
-      const signUpUserData: User = await this.auth.signup(userData);
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const verificationCodeToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+      const signUpUserData: User = await this.auth.signup(userData, verificationCodeToken);
 
-      res.status(201).json({ data: signUpUserData, message: 'signup' });
+      try {
+        const url = `${NODE_ENV === 'production' ? ORIGIN : 'http://localhost:3000'}/verification/${resetToken}/${signUpUserData.id}`;
+        await new Email(userData, url).sendVerificationUrl();
+
+        res.status(200).json({
+          status: 'success',
+          message: 'You will receive a verification email',
+        });
+      } catch (err: any) {
+        console.log(err);
+        throw new HttpException(500, 'There was an error sending email');
+      }
     } catch (error) {
+      console.log('error >>', error);
       next(error);
     }
   };
@@ -110,6 +124,32 @@ export class AuthController {
       }
     } catch (err: any) {
       next(err);
+    }
+  };
+
+  public verifyEmail = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { token, userId } = req.body;
+      const verificationToken = crypto.createHash('sha256').update(token).digest('hex');
+      const user = await this.prisma.user.findFirst({
+        where: {
+          id: userId,
+          verificationCode: verificationToken,
+          isVerified: false,
+        },
+      });
+
+      if (user) {
+        await this.user.updateUserVerification(req.body.userId);
+
+        res.status(200).json({
+          message: 'Your sign up successfully',
+        });
+      } else {
+        throw new HttpException(409, 'User not found');
+      }
+    } catch (error) {
+      next(error);
     }
   };
 }

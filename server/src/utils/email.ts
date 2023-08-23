@@ -44,8 +44,8 @@ export default class Email {
     await this.newTransport().sendMail(mailOptions);
   }
 
-  async sendVerificationCode() {
-    await this.send('verificationCode', 'Your account verification code');
+  async sendVerificationUrl() {
+    await this.send('verificationUrl', 'Verify your account');
   }
 
   async sendPasswordResetToken() {
