@@ -3,7 +3,7 @@
 
 datasource db {
   provider = "mongodb"
-  url      = env("DATABASE_URL")
+  url      = "mongodb+srv://mehmetcankizilyer:luPctBuSZy5VxtpH@cluster0.1ffdtl3.mongodb.net/test"
 }
 
 generator client {
@@ -34,17 +34,24 @@ model Premium {
 }
 
 model User {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  email     String  @unique
-  username  String  @unique
-  win       Int     @default(0)
-  lose      Int     @default(0)
-  rank      Int     @default(0)
-  password  String
-  queueBan  String  @default("")
-  premium   Premium @relation(fields: [premiumId], references: [id])
-  premiumId String  @db.ObjectId
-  admin     Admin   @relation(fields: [adminId], references: [id])
-  adminId   String  @db.ObjectId
-  banned    DateTime @default(now())
+  id                 String    @id @default(auto()) @map("_id") @db.ObjectId
+  email              String    @unique
+  username           String    @unique
+  win                Int       @default(0)
+  lose               Int       @default(0)
+  rank               Int       @default(0)
+  password           String
+  queueBan           String    @default("")
+  premium            Premium   @relation(fields: [premiumId], references: [id])
+  premiumId          String    @db.ObjectId
+  admin              Admin     @relation(fields: [adminId], references: [id])
+  adminId            String    @db.ObjectId
+  banned             DateTime  @default(now())
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  provider           String?
+  verificationCode   String?   @unique
+  passwordResetToken String?   @unique
+  passwordResetAt    DateTime?
+  isVerified         Boolean   @default(false)
 }

@@ -7,7 +7,7 @@ export default function HomeHeroAnimationScreen() {
   const [textColor, setTextColor] = useState<string>('');
 
   return (
-    <h1 className={`${textColor} text-sm leading-10 font-bold md:text-md md:leading-none`}>
+    <h1 className={`${textColor} text-[10px] leading-6 font-bold md:text-md md:leading-none`}>
       <TypeAnimation
         preRenderFirstString={true}
         sequence={[

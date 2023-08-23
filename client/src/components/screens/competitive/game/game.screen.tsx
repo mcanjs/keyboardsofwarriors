@@ -188,6 +188,16 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
       //? Competitive redirect players event listener
       socket.on('competitive:redirect-players', onRedirectPlayers);
     }
+
+    return () => {
+      socket.off('competitive:game-informations', onGameInformations);
+      socket.off('competitive:pre-countdown-startable', onPreCountdownStartable);
+      socket.off('competitive:game-started', onGameStarted);
+      socket.off('competitive:update-opponent-corrects', onUpdateOpponentCorrects);
+      socket.off('competitive:game-ended', onGameFinished);
+      socket.off('competitive:opponent-left', onOpponentLeft);
+      socket.off('competitive:redirect-players', onRedirectPlayers);
+    };
   }, [socket]);
 
   const onCountdownEnded = () => {

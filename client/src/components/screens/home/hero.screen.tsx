@@ -4,10 +4,12 @@ import Image from 'next/image';
 import HomeHeroAnimationScreen from './hero-animation.screen';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 export default function HomeHeroScreen() {
   const { scrollYProgress } = useScroll();
   const translateY = useTransform(scrollYProgress, [0, 1], [0, 400]);
+  const translateYPlayBtn = useTransform(scrollYProgress, [0, 2], [0, 400]);
   const negativeTranslateY = useTransform(scrollYProgress, [0, 1], [0, -400]);
   const opacity = useTransform(scrollYProgress, [0, 0.4], [1, 0]);
   const [isPressedR, setIsPressedR] = useState<boolean>(false);
@@ -56,19 +58,46 @@ export default function HomeHeroScreen() {
       >
         <div className="container mx-auto">
           <div className="hero-content flex-col text-center mx-auto">
-            <div className="max-w-[85%]">
+            <div>
               <HomeHeroAnimationScreen />
             </div>
-            <div className="max-w-[65%]">
-              <div className="text-gray-500">
-                <p>
-                  Typing Speed Race is a great way to test your typing skills. The game has different modes so you can
-                  find a mode that suits your skill level. You can compete with your friends in the private room mode or
-                  race with the whole world in the multiplayer mode. Typing Speed Race is both fun and educational. It
-                  is a great opportunity to improve your typing speed and learn new things.
-                </p>
-              </div>
+            <div className="text-gray-500">
+              <p>
+                Typing Speed Race is a great way to test your typing skills. The game has different modes so you can
+                find a mode that suits your skill level. You can compete with your friends in the private room mode or
+                race with the whole world in the multiplayer mode. Typing Speed Race is both fun and educational. It is
+                a great opportunity to improve your typing speed and learn new things.
+              </p>
             </div>
+            <Link href="/login">
+              <motion.div
+                className="relative"
+                initial={{ translateX: '-100%' }}
+                animate={{ translateX: 0 }}
+                style={{
+                  translateY: translateYPlayBtn,
+                }}
+                transition={{
+                  type: 'spring',
+                  stiffness: 260,
+                  damping: 20,
+                }}
+              >
+                <motion.button
+                  className="btn btn-primary"
+                  transition={{
+                    repeat: Infinity,
+                    duration: 1,
+                    type: 'spring',
+                    stiffness: 260,
+                    damping: 50,
+                    repeatType: 'reverse',
+                  }}
+                >
+                  Play
+                </motion.button>
+              </motion.div>
+            </Link>
           </div>
         </div>
       </motion.div>

@@ -2,7 +2,11 @@ import React from 'react';
 import { Socket, io } from 'socket.io-client';
 import { useAuth } from '../authentication/useAuth';
 
-export const useSocket = () => {
+interface IProps {
+  namespace?: '/' | '/private-rooms';
+}
+
+export const useSocket = (props?: IProps) => {
   const [socket, setSocket] = React.useState<Socket | undefined>(undefined);
   const { auth } = useAuth();
 
@@ -12,7 +16,7 @@ export const useSocket = () => {
     }
 
     if (typeof socket === 'undefined' && auth !== null) {
-      const socketIo = io(`${process.env.NEXT_PUBLIC_SOCKET_URL}`, {
+      const socketIo = io(`${process.env.NEXT_PUBLIC_SOCKET_URL}${props?.namespace || '/'}`, {
         reconnectionDelayMax: 10000,
         query: { email: auth.email },
       });

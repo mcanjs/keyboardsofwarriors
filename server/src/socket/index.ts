@@ -2,7 +2,7 @@ import { logger } from '@/utils/logger';
 import http from 'http';
 import { SOCKET_PORT } from '@/config';
 import { Socket, Server as SocketIOServer } from 'socket.io';
-import { ISocketQueueList, ISocketQueueStart, ISocketUser } from '@/interfaces/socket.interface';
+import { ISocketNamespaces, ISocketQueueList, ISocketQueueStart, ISocketUser } from '@/interfaces/socket.interface';
 import Matcher from '@/servers/matcher';
 import { PrismaClient } from '@prisma/client';
 import { IMatcherFoundedData, IMatcherRoomData } from '@/interfaces/matcher.interface';
@@ -10,7 +10,6 @@ import LeaverDedector from '@/core/dedectors/leaver.dedector';
 import Competitive from '@/servers/competitive';
 import { generateSocketQueueListDataObject } from '@/core/generators/object.generator';
 import { ICompetitiveMistakeClientParameters } from '@/interfaces/competitive.interface';
-import { instrument } from '@socket.io/admin-ui';
 export class ServerSocket {
   private io: SocketIOServer;
   public server: http.Server;
@@ -20,29 +19,29 @@ export class ServerSocket {
   private leaverDedector = new LeaverDedector();
   private onlineUsers = 0;
   private queueList: ISocketQueueList = {};
+  private namespaces: ISocketNamespaces = {
+    competitive: undefined,
+    privateRooms: undefined,
+  };
   constructor(appServer: Express.Application) {
     this.server = http.createServer(appServer);
     this.io = new SocketIOServer(this.server, {
       cors: {
-        origin: ['https://keyboardsofwarriors.com', 'https://admin.socket.io'],
+        origin: ['https://keyboardsofwarriors.com', 'https://admin.keyboardsofwarriors.com', 'http://localhost:3000'],
         credentials: true,
       },
       transports: ['websocket', 'polling'],
     });
+    this.namespaces = {
+      competitive: this.io.of('/'),
+      privateRooms: this.io.of('/private-rooms'),
+    };
     this.competitive = new Competitive(this.io);
     this.matcher = new Matcher(this.io, this.competitive);
 
-    //? Socket IO Admin
-    instrument(this.io, {
-      auth: {
-        type: 'basic',
-        username: 'gmcann',
-        password: '$2a$12$.QYs2oOdpYdy91qEgaQXcOB6jAKnPcWcSzlfjKrWfSVRQy423CiPu',
-      },
-      mode: (process.env.NODE_ENV as 'production' | 'development') || 'development',
-    });
-
-    this.connection();
+    //? Sockets
+    this.competitiveSocket();
+    this.privateRoomsSocket();
   }
 
   public getQueueList(): ISocketQueueList {
@@ -170,11 +169,11 @@ export class ServerSocket {
     });
   }
 
-  private connection(): void {
-    this.io.on('connection', async socket => {
+  private competitiveSocket(): void {
+    this.namespaces.competitive.on('connection', async socket => {
       const email = socket.handshake.query.email;
       const user = await this.getUserInformations(email as string);
-      console.log('One user connected: ', email);
+      console.log('One user connected to competitive: ', email);
 
       //? Give first info from client
       this.changeOnlineUserStatements();
@@ -217,6 +216,18 @@ export class ServerSocket {
       //? Admin Log event listeners
       socket.on('admin:log-matcher-rooms', this.adminMatcherRooms.bind(this, socket));
       socket.on('admin:log-competitive-rooms', this.adminCompetitiveRooms.bind(this, socket));
+    });
+  }
+
+  private privateRoomsSocket(): void {
+    this.namespaces.privateRooms.on('connection', async socket => {
+      const email = socket.handshake.query.email;
+      const user = await this.getUserInformations(email as string);
+      console.log('One user connected to private rooms: ', email);
+
+      socket.on('disconnect', async () => {
+        console.log('One user disconnected to private rooms: ', email);
+      });
     });
   }
 

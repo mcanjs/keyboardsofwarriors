@@ -182,12 +182,18 @@ export default function Login() {
             )}
 
             <div className="flex items-center justify-between">
-              <p className="text-sm text-gray-500">
-                No account?
-                <Link href="/signup" className="underline">
-                  Sign up
-                </Link>
-              </p>
+              <div>
+                <p className="text-sm text-gray-500">
+                  <Link href="/signup" className="underline">
+                    Sign up
+                  </Link>
+                </p>
+                <p className="text-sm text-gray-500">
+                  <Link href="/forgot-password" className="underline">
+                    Recover Password
+                  </Link>
+                </p>
+              </div>
 
               <button
                 type="submit"

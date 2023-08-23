@@ -55,7 +55,6 @@ export default function Signup() {
           const nextUrl = params?.get('next');
           window.location.href = nextUrl || '/';
         } else {
-          //? Guard
           setIsLoading(false);
           toast.error(response.message);
         }

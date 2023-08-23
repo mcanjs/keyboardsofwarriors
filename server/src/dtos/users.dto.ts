@@ -1,4 +1,4 @@
-import { IsEmail, IsString, IsNotEmpty, MinLength, MaxLength } from 'class-validator';
+import { IsEmail, IsString, IsNotEmpty, MinLength, MaxLength, IsMongoId } from 'class-validator';
 
 export class CreateUserDto {
   @IsEmail()
@@ -21,6 +21,25 @@ export class CreateUserDto {
 export class CheckUserDto {
   @IsEmail()
   public email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(9)
+  @MaxLength(32)
+  public password: string;
+}
+
+export class CheckUserEmailDto {
+  @IsEmail()
+  public email: string;
+}
+
+export class CheckUserResetPasswordDto {
+  @IsString()
+  public passwordResetToken: string;
+
+  @IsMongoId()
+  public userId: string;
 
   @IsString()
   @IsNotEmpty()

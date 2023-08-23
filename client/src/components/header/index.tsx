@@ -23,19 +23,19 @@ export default function Header() {
     <div className="navbar w-full h-[80px] fixed top-0 left-0 z-[1] flex-wrap gap-1 p-0 bg-base-200 md:flex-nowrap md:flex-row ">
       <div className="container mx-auto">
         <div
-          className={`flex flex-1 basis-1/6 justify-center ${
+          className={`flex flex-1 basis-1/2 justify-center ${
             !isLoading && auth ? 'md:basis-1/3' : 'md:basis-2/3'
           } md:justify-start p-3`}
         >
-          <Link href="/" className="mr-auto text-sm">
+          <Link href="/" className="mr-auto text-xs md:text-sm">
             Keyboards of Warriors
           </Link>
         </div>
-        <div className="flex-1 hidden md:flex md:basis-1/3 p-3">
+        <div className="flex-1 flex basis-1/2 md:basis-1/3 p-3">
           <motion.div
             whileHover={{ scale: 1.04 }}
             whileTap={{ scale: 0.95 }}
-            className="relative mx-auto overflow-hidden"
+            className="relative ml-auto overflow-hidden md:mx-auto"
           >
             <Link href="/matchmaker" className="btn bg-indigo-600 hover:bg-indigo-500">
               PLAY
@@ -43,7 +43,7 @@ export default function Header() {
           </motion.div>
         </div>
         <div
-          className={`flex flex-1 basis-1/6 ${
+          className={`flex-1 hidden md:flex ${
             !isLoading && auth ? 'md:basis-1/3' : 'md:basis-2/3 justify-center'
           } md:justify-end p-3`}
         >
@@ -66,7 +66,7 @@ export default function Header() {
             </div>
           )}
           {!isLoading && !auth && (
-            <ul className="menu menu-horizontal">
+            <ul className="menu menu-horizontal hidden md:flex">
               <li>
                 <Link href="/login">Login</Link>
               </li>

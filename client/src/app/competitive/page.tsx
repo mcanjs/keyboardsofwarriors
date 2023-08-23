@@ -116,8 +116,6 @@ export default function Competitive() {
       dispatch(changeMatchFoundedData(matchData));
     }
 
-    function onMatchReady() {}
-
     if (typeof socket !== 'undefined' && auth !== null) {
       //? Connect event listener
       socket.on('connect', onConnect);
@@ -137,9 +135,6 @@ export default function Competitive() {
 
       //? Match founded event listener
       socket.on('match:founded', onMatchFounded);
-
-      //? Match ready event listener
-      socket.on('match:ready', onMatchReady);
 
       //? Competitive accessible event listener
       socket.on('competitive:accessible', onCompetitiveAccessible);
@@ -165,9 +160,9 @@ export default function Competitive() {
         socket.off('admin:log-competitive-rooms', onLogCompetitiveRooms);
         socket.off('match:room-data', onMatchRoomData);
         socket.off('match:founded', onMatchFounded);
-        socket.off('match:ready', onMatchReady);
         socket.off('competitive:accessible', onCompetitiveAccessible);
         socket.off('queue:protocol-loading', onQueueProtocolLoading);
+        socket.off('queue:banned', onQueueBanned);
       }
     };
   }, [socket, auth]);

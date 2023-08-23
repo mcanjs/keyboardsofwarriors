@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 
 interface IProps {
   seconds: number;
@@ -15,15 +15,14 @@ export default function GeneralCountdown(props: IProps) {
       if (seconds > 0) {
         setSeconds((old) => old - 1);
       } else {
-        if (typeof props.onCountdownEnded !== "undefined")
-          props.onCountdownEnded();
+        if (typeof props.onCountdownEnded !== 'undefined') props.onCountdownEnded();
         clearInterval(timer);
       }
     }, 1000);
     return () => {
       clearInterval(timer);
     };
-  }, [seconds, props.isWaitProtocol]);
+  }, [seconds, props]);
 
   const checkNeedPrefix = (num: number): string => {
     if (num < 10) {
@@ -39,10 +38,10 @@ export default function GeneralCountdown(props: IProps) {
         <div
           className={`${
             (seconds / props.seconds) * 100 > 50
-              ? "bg-green-400"
+              ? 'bg-green-400'
               : (seconds / props.seconds) * 100 > 20
-              ? "bg-yellow-400"
-              : "bg-red-400"
+              ? 'bg-yellow-400'
+              : 'bg-red-400'
           } h-full absolute top-0 left-0 rounded-full transition-all`}
           style={{
             width: `${Math.min((seconds / props.seconds) * 100, 100)}%`,
@@ -52,11 +51,7 @@ export default function GeneralCountdown(props: IProps) {
       <span className="relative z-1 text-white">
         <span>{checkNeedPrefix(Math.floor(seconds / 60))}</span>
         <span>:</span>
-        <span>
-          {checkNeedPrefix(
-            seconds > 60 ? seconds % 60 : seconds === 60 ? 0o0 : seconds
-          )}
-        </span>
+        <span>{checkNeedPrefix(seconds > 60 ? seconds % 60 : seconds === 60 ? 0o0 : seconds)}</span>
       </span>
     </div>
   );

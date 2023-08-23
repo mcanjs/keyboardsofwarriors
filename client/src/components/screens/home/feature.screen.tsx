@@ -22,6 +22,7 @@ export default function HomeFeatureScreen() {
               translateY: translateY0,
               opacity,
             }}
+            viewport={{ once: true }}
           >
             <GiTabletopPlayers className="w-10 h-10 text-indigo-500" />
 
@@ -38,6 +39,7 @@ export default function HomeFeatureScreen() {
               translateY: translateY25,
               opacity,
             }}
+            viewport={{ once: true }}
           >
             <GiCrossedSwords className="w-10 h-10 text-indigo-500" />
 
@@ -55,6 +57,7 @@ export default function HomeFeatureScreen() {
               translateY: translateY15,
               opacity,
             }}
+            viewport={{ once: true }}
           >
             <GiTrophyCup className="w-10 h-10 text-indigo-500" />
 
@@ -65,15 +68,14 @@ export default function HomeFeatureScreen() {
               their leagues.
             </p>
           </motion.div>
-        </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
           <motion.div
             className="block rounded-xl border border-gray-800 p-8 shadow-xl transition hover:border-indigo-500/10 hover:shadow-indigo-500/10"
             style={{
               translateY: translateY0,
               opacity,
             }}
+            viewport={{ once: true }}
           >
             <GiLockedDoor className="w-10 h-10 text-indigo-500" />
 
@@ -90,6 +92,7 @@ export default function HomeFeatureScreen() {
               translateY: translateY25,
               opacity,
             }}
+            viewport={{ once: true }}
           >
             <TbTournament className="w-10 h-10 text-indigo-500" />
 
@@ -106,6 +109,7 @@ export default function HomeFeatureScreen() {
               translateY: translateY0,
               opacity,
             }}
+            viewport={{ once: true }}
           >
             <MdMoneyOff className="w-10 h-10 text-indigo-500" />
 
