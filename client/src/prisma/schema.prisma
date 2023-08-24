@@ -50,8 +50,8 @@ model User {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
   provider           String?
-  verificationCode   String?   @unique
-  passwordResetToken String?   @unique
+  verificationCode   String    @unique
+  passwordResetToken String?
   passwordResetAt    DateTime?
   isVerified         Boolean   @default(false)
 }

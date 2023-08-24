@@ -12,8 +12,8 @@ export class AuthService {
   public users = new PrismaClient().user;
 
   public async signup(userData: CreateUserDto, verificationCode: string): Promise<User> {
-    const findUser: User = await this.users.findUnique({ where: { email: userData.email, username: userData.username } });
-    if (findUser) throw new HttpException(409, `User already exists`);
+    const findUser: User[] = await this.users.findMany({ where: { OR: [{ email: userData.email }, { username: userData.username }] } });
+    if (findUser.length > 0) throw new HttpException(409, `User already exists`);
 
     const hashedPassword = await hash(userData.password, 10);
     const createUserData: Promise<User> = this.users.create({
