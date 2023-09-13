@@ -1,5 +1,5 @@
 import { IMatcherFoundedData, IMatcherRoom, IMatcherRoomData, IMatcherRoomUser, IMatcherRooms } from '@/interfaces/matcher.interface';
-import { getGameLanguages, getGameLeagues } from '../getter';
+import { getGameLanguages, getGameLeagues } from './getter';
 import { ISocketUser } from '@/interfaces/socket.interface';
 import MMR from '@/core/mmr';
 import { generateCompetitiveRoomObject, generateMatcherFoundedObject, generateMatcherRoomUserObject } from '@/core/generators/object.generator';
@@ -8,7 +8,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import { logger } from '@/utils/logger';
 import { PrismaClient } from '@prisma/client';
 import LeaverDedector from '@/core/dedectors/leaver.dedector';
-import Competitive from '../competitive';
+import Competitive from './competitive.server';
 import { IGameLanguages, IGameLeagues } from '@/interfaces/game.interface';
 
 export default class Matcher {

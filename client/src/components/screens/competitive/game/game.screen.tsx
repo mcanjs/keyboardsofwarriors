@@ -43,7 +43,12 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
 
   //? Input onkeydown event
   const checkWord = (e: KeyboardEvent): void => {
-    if (!isGameStarted) return;
+    if (!isGameStarted) {
+      if (inputRef.current) {
+        inputRef.current.value = '';
+      }
+      return;
+    }
 
     const isPressedSpace = e.key === ' ';
     const target = e.target as HTMLInputElement;
@@ -137,6 +142,9 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
 
     function onPreCountdownStartable() {
       setIsCountdownAccess(true);
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
     }
 
     function onGameStarted() {
@@ -198,6 +206,7 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
       socket.off('competitive:opponent-left', onOpponentLeft);
       socket.off('competitive:redirect-players', onRedirectPlayers);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket]);
 
   const onCountdownEnded = () => {

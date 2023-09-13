@@ -32,3 +32,19 @@ export const eraseCookie = (name: string): void => {
 export const capitalizeFirstLetter = (string: string): string => {
   return string.charAt(0).toUpperCase() + string.slice(1);
 };
+
+export const generateWord = (language: IGameLanguages, requestedWord: number): string[] => {
+  const words: string[] = require(`../json/words/${language}.json`).words;
+  const length = words.length;
+  const selectedWords: string[] = [];
+  if (requestedWord > length) throw new RangeError('GenerateWord: more elements taken than available');
+  while (requestedWord--) {
+    const selected = Math.floor(Math.random() * length);
+    if (!selectedWords.includes(words[selected])) {
+      selectedWords.push(words[selected]);
+    } else {
+      requestedWord++;
+    }
+  }
+  return selectedWords;
+};

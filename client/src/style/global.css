@@ -6,6 +6,18 @@ body {
   margin-top: 80px;
 }
 
+@keyframes caret {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
 .loader {
   animation: rotate 2.625s linear infinite;
   width: 3rem;
@@ -31,4 +43,22 @@ body {
     margin: 0 5px;
     font-size: 12px;
   }
+}
+
+.caret-animation {
+  font-size: 22px;
+  opacity: 1;
+  @apply text-indigo-600;
+  &.not-started {
+    animation: caret 1.75s ease-in-out infinite;
+  }
+  transition: all 0.075s ease-in;
+}
+
+.incorrect-word span {
+  @apply !text-error;
+}
+
+.word-container div span {
+  @apply text-gray-600;
 }

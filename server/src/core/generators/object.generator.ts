@@ -3,6 +3,13 @@ import { IGameLanguages } from '@/interfaces/game.interface';
 import { ISocketQueueListData, ISocketUser } from '@/interfaces/socket.interface';
 import { ICompetitiveGameInformations, ICompetitiveRoom, ICompetitiveRoomUser } from '@/interfaces/competitive.interface';
 import { GenerateWord } from './word.generator';
+import {
+  IPrivateRoomPlayer,
+  IPrivateInvisibleRoomPrivacy,
+  IPrivateRoomClientParameters,
+  IPrivateRoomParameters,
+} from '@/interfaces/private-room.interface';
+import { init } from '@paralleldrive/cuid2';
 
 export const generateSocketQueueListDataObject = (email: string, queueData: IMatcherRoomData): ISocketQueueListData => {
   return {
@@ -75,5 +82,34 @@ export const generateCompetitiveGameInformationsObject = (words: string[], start
       startCountdown,
       finish,
     },
+  };
+};
+
+export const generatePrivateRoomParametersObject = (clientParameters: IPrivateRoomClientParameters): IPrivateRoomParameters => {
+  return {
+    words: clientParameters.words,
+    time: clientParameters.time,
+    language: clientParameters.language,
+    visibility: clientParameters.visibility,
+  };
+};
+
+export const generatePrivateRoomUserObject = (user: ISocketUser, ownerSocketId: string): IPrivateRoomPlayer => {
+  return {
+    email: user.email,
+    userId: user.id,
+    socketId: ownerSocketId,
+    username: user.username,
+  };
+};
+
+export const generateId = init({
+  random: Math.random,
+  length: 6,
+});
+
+export const generatePrivateRoomPrivacyObject = (): IPrivateInvisibleRoomPrivacy => {
+  return {
+    cuid: generateId(),
   };
 };

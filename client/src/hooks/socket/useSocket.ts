@@ -3,7 +3,7 @@ import { Socket, io } from 'socket.io-client';
 import { useAuth } from '../authentication/useAuth';
 
 interface IProps {
-  namespace?: '/' | '/private-rooms';
+  namespace?: '/' | '/private-rooms' | '/improve';
 }
 
 export const useSocket = (props?: IProps) => {
@@ -25,6 +25,7 @@ export const useSocket = (props?: IProps) => {
       setSocket(socketIo);
     }
     return cleanUp;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [typeof socket === 'undefined', auth !== null]);
 
   return socket;

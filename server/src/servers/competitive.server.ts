@@ -1,5 +1,5 @@
 import { Server as SocketIOServer } from 'socket.io';
-import { getGameLanguages, getGameLeagues } from '../getter';
+import { getGameLanguages, getGameLeagues } from './getter';
 import {
   ICompetitiveCalculateResult,
   ICompetitiveGameInformations,

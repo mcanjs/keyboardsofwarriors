@@ -26,9 +26,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen flex flex-col">
         <ReduxProvider>
           <Header />
-          <PageProvider>
-            <main className="flex flex-1 flex-col">{children}</main>
-          </PageProvider>
+          <PageProvider>{children}</PageProvider>
           <Footer />
           <Sounder />
         </ReduxProvider>

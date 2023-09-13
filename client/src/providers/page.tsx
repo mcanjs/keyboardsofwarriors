@@ -6,7 +6,7 @@ export default function PageProvider({ children }: { children: React.ReactNode }
   return (
     <>
       <AnimatePresence>
-        <motion.div
+        <motion.main
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 15 }}
@@ -14,7 +14,7 @@ export default function PageProvider({ children }: { children: React.ReactNode }
           className="flex flex-1 flex-col"
         >
           {children}
-        </motion.div>
+        </motion.main>
       </AnimatePresence>
     </>
   );

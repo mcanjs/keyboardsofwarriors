@@ -22,7 +22,8 @@ export default function GeneralCountdown(props: IProps) {
     return () => {
       clearInterval(timer);
     };
-  }, [seconds, props]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seconds, props.isWaitProtocol]);
 
   const checkNeedPrefix = (num: number): string => {
     if (num < 10) {

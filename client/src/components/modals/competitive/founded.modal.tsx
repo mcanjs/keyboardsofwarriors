@@ -22,7 +22,7 @@ export default function CompetitiveFoundedModal(props: IProps) {
   const isMatchFounded = useAppSelector(
     (state) => state.matchmakerReducer.isMatchFounded
   );
-  const isUserAccepted = useAppSelector(
+  const isUserAccepted: boolean = useAppSelector(
     (state) => state.matchmakerReducer.isUserAccepted
   );
 
@@ -51,7 +51,8 @@ export default function CompetitiveFoundedModal(props: IProps) {
     return () => {
       clearInterval(timer);
     };
-  });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seconds]);
 
   const onClickApprovalButton = () => {
     if (!isUserAccepted) {

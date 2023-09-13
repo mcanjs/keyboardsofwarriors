@@ -35,6 +35,6 @@ export const config = {
     '/signup',
     '/forgot-password',
     '/reset-password',
-    '/verification/:path*',
+    '/private-rooms/:path*',
   ],
 };
