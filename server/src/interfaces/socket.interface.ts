@@ -4,7 +4,6 @@ import { DefaultEventsMap } from 'socket.io/dist/typed-events';
 
 export interface ISocketNamespaces {
   competitive: Namespace<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> | undefined;
-  privateRooms: Namespace<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> | undefined;
 }
 
 export interface ISocketQueueStart {
