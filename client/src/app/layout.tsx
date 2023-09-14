@@ -23,6 +23,9 @@ const inter = Inter({
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html data-theme="dark" lang="en" className={inter.className}>
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+      </head>
       <body className="min-h-screen flex flex-col">
         <ReduxProvider>
           <Header />
