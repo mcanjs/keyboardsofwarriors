@@ -9,6 +9,19 @@ interface IProps {
 }
 
 export default function ResultDetailScreen({ data, userId, users, auth }: IProps) {
+  const calculateAllMistakes = (user: User): number => {
+    let mistake = 0;
+    /* @ts-ignore */
+    const mistakes = Object.keys(data?.matchLog[`user${user.id}`].mistakes);
+
+    for (let i = 0; i < mistakes.length; i++) {
+      /* @ts-ignore */
+      mistake += data?.matchLog[`user${user.id}`].mistakes[mistakes[i]].length;
+    }
+
+    return mistake;
+  };
+
   return (
     <div className="mt-3">
       <div className="flex text-center">
@@ -44,8 +57,7 @@ export default function ResultDetailScreen({ data, userId, users, auth }: IProps
                 <p>{data?.matchLog[`user${user.id}`].incorrects}</p>
               </div>
               <div className="flex-1 basis-1/4 text-center">
-                {/* @ts-ignore */}
-                <p>{Object.keys(data?.matchLog[`user${user.id}`].mistakes).length}</p>
+                <p>{calculateAllMistakes(user)}</p>
               </div>
             </div>
           </div>

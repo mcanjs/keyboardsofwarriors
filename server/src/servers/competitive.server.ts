@@ -243,7 +243,7 @@ export default class Competitive {
 
       await this.deleteRoom(matchData);
     } else {
-      logger.error('[FINISHED] : Competitive game not finished because not founding related room');
+      logger.error('[FINISHED] : Competitive game not finished because not founding related room or game already ending for a user left');
     }
   }
 

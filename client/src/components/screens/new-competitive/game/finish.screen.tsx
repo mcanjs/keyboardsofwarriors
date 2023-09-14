@@ -1,7 +1,7 @@
 import Lottie from 'lottie-react';
 import calculatingResults from '@/src/json/animations/calculating-result.json';
 
-export default function GeneralGameFinishedScreen() {
+export default function CompetitiveGameFinished() {
   return (
     <div className="w-full h-full absolute top-0 left-0 flex flex-col justify-center items-center">
       <Lottie animationData={calculatingResults} className="w-[250px] mx-auto" />

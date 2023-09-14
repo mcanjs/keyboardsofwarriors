@@ -1,4 +1,4 @@
-import GeneralGameScreen from '@/src/components/screens/general/game/game.screen';
+import GeneralGameScreen from '@/src/components/screens/improve/game/game.screen';
 import { generateWord } from '@/src/utils/helper';
 
 function getWords(): string[] {

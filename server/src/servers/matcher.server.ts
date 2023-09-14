@@ -89,6 +89,9 @@ export default class Matcher {
         const user = room.users[i];
 
         if (user.email === email) {
+          if (user.matchData.isAcceptedMatch) {
+            await this.punishmentNotAcceptedUser(user);
+          }
           room.users.splice(i, 1);
         }
       }

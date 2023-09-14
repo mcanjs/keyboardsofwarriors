@@ -49,7 +49,7 @@ export default class MMRCalculator {
 
     if (totalMatches.length > 15) {
       const percentage = (victorious.length * 100) / totalMatches.length;
-      const totalPoint = (percentage * this.states.maxLP) / 100;
+      const totalPoint = Math.round((percentage * this.states.maxLP) / 100);
 
       if (totalPoint > this.states.minLP) {
         await this.updateUserRank(userId, totalPoint, 'Victory');
@@ -80,7 +80,7 @@ export default class MMRCalculator {
 
     if (totalMatches.length > 10) {
       const percentage = (defeats.length * 100) / totalMatches.length;
-      const totalPoint = (percentage * this.states.maxLP) / 100;
+      const totalPoint = Math.round((percentage * this.states.maxLP) / 100);
 
       if (totalPoint > this.states.minLP) {
         await this.updateUserRank(userId, totalPoint, 'Defeat');

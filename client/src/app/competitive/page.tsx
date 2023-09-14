@@ -3,7 +3,6 @@
 import { useAuth } from '@/src/hooks/authentication/useAuth';
 import { useAppDispatch, useAppSelector } from '@/src/hooks/redux/hook';
 import { useSocket } from '@/src/hooks/socket/useSocket';
-import useSWR from 'swr';
 import React, { useEffect, useState } from 'react';
 import { IoArrowForwardOutline } from 'react-icons/io5';
 import GeneralTimer from '@/src/components/timer/general.timer';
@@ -15,14 +14,13 @@ import {
 } from '@/src/redux/features/matchmaker/matchmaker.slice';
 import { toast } from 'react-hot-toast';
 import { IMatcherFoundedData, IMatcherQueueBanData, IMatcherRoomData } from '@/src/interfaces/socket/matcher.interface';
-import Game from '@/src/components/screens/competitive/game';
+import Game from '@/src/components/screens/new-competitive/game';
 import CompetitiveBannedModal from '@/src/components/modals/competitive/banned.modal';
 import { IGameLanguages } from '@/src/interfaces/socket/game.interface';
 import { capitalizeFirstLetter, checkGameActiveLanguageIsVerify } from '@/src/utils/helper';
 import AdminShortcuts from '@/src/components/shortcuts/admin.shortcuts';
 import MMR from '@/src/utils/mmr';
 import { Loader } from '@/src/components/loader';
-import OnlineUserCounter from '@/src/components/counter/general.counter';
 
 export default function Competitive() {
   //? Hooks
@@ -210,8 +208,8 @@ export default function Competitive() {
   return auth ? (
     <div className="w-full flex-1 flex flex-col justify-center items-center">
       {!isAccessibleGame && (
-        <>
-          <div className="max-w-lg w-full rounded-lg border bg-base-200 border-gray-300 text-center shadow-xl">
+        <div className="container mx-auto">
+          <div className="max-w-lg w-full mx-auto rounded-lg border bg-base-200 border-gray-300 text-center shadow-xl">
             <div className="flex flex-col items-center justify-center gap-4 border-b border-gray-100 px-6 py-5">
               <span className="flex items-center gap-1 text-xs">
                 <span>Current Leaguge</span>
@@ -309,7 +307,7 @@ export default function Competitive() {
               onEndedCountdown={bannedQueueOnEndedCountdown}
             />
           )}
-        </>
+        </div>
       )}
       {isAccessibleGame && typeof queueData !== 'undefined' && typeof socket !== 'undefined' && (
         <Game socket={socket} queueData={queueData} />

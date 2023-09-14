@@ -41,6 +41,7 @@ export default function Game({ socket, queueData }: IProps) {
         socket.off("competitive:canceled", onCompetitiveCanceled);
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket]);
 
   return (

@@ -8,6 +8,7 @@ interface IProps {
   words: string[];
   onCorrect?: Function;
   onIncorrect?: Function;
+  onFinished?: Function;
 }
 
 export default function GeneralGameScreen(props: IProps) {
@@ -89,12 +90,17 @@ export default function GeneralGameScreen(props: IProps) {
           }
         }
 
-        setActiveLetter(0);
-        setActiveWord((old) => old + 1);
-        //@ts-ignore
-        wordInput.current.value = '';
-        if (caretYStatus !== 'new-line' && !isNextWordProcedure) {
-          caretXCalculator('spacing');
+        if (activeWord === props.words.length) {
+          typeof props.onFinished !== 'undefined' && props.onFinished();
+          return;
+        } else {
+          setActiveLetter(0);
+          setActiveWord((old) => old + 1);
+          //@ts-ignore
+          wordInput.current.value = '';
+          if (caretYStatus !== 'new-line' && !isNextWordProcedure) {
+            caretXCalculator('spacing');
+          }
         }
       } else if (e.key === 'Backspace') {
         const condition = activeLetter - 1 !== 0 ? activeLetter - 1 : 0;
@@ -220,10 +226,9 @@ export default function GeneralGameScreen(props: IProps) {
           autoComplete="false"
           autoCorrect="false"
         />
-        <div className="max-h-[150px] overflow-hidden">
+        <div className="max-h-[150px] overflow-hidden" onClick={onClickWordContainer}>
           <div
             className={`${willBeFocus ? 'blur-sm' : ''} word-container flex flex-wrap`}
-            onClick={onClickWordContainer}
             ref={wordContainer}
             style={{ transform: `translateY(-${caretYPos}px)` }}
           >
