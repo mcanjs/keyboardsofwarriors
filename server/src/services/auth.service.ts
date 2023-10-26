@@ -5,7 +5,7 @@ import { Service } from 'typedi';
 import { SECRET_KEY } from '@config';
 import { CreateUserDto } from '@dtos/users.dto';
 import { HttpException } from '@exceptions/httpException';
-import { DataStoredInToken, TokenData } from '@interfaces/auth.interface';
+import { DataStoredInToken, ILogin, TokenData } from '@interfaces/auth.interface';
 
 @Service()
 export class AuthService {
@@ -38,8 +38,12 @@ export class AuthService {
     return createUserData;
   }
 
-  public async login(userData: CreateUserDto): Promise<{ cookie: string; findUser: User }> {
-    const findUser: User = await this.users.findUnique({ where: { email: userData.email } });
+  public async login(userData: CreateUserDto): Promise<{ cookie: string; findUser: User; user: ILogin }> {
+    const findUser: User = await this.users.findUnique({
+      where: {
+        email: userData.email,
+      },
+    });
     if (!findUser) throw new HttpException(409, `This email ${userData.email} was not found`);
 
     const isPasswordMatching: boolean = await compare(userData.password, findUser.password);
@@ -47,8 +51,22 @@ export class AuthService {
 
     const tokenData = this.createToken(findUser);
     const cookie = this.createCookie(tokenData);
+    const user = await this.users.findFirst({
+      where: { email: findUser.email },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        rank: true,
+        admin: true,
+      },
+    });
 
-    return { cookie, findUser };
+    return {
+      cookie,
+      findUser,
+      user,
+    };
   }
 
   public async logout(userData: User): Promise<User> {

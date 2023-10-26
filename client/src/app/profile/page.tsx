@@ -6,7 +6,6 @@ import MMR from '@/src/utils/mmr';
 import Link from 'next/link';
 import { GiRank1, GiTrophyCup } from 'react-icons/gi';
 
-
 async function userStatus(banned: Date | undefined) {
   if (banned) {
     console.log('banned date:', new Date(banned).toLocaleString());
@@ -76,9 +75,6 @@ export default async function Profile() {
           <p className="text-[32px] font-light">Last 5 Matches</p>
           <ProfileMatchesScreen user={authedUser} />
         </div>
-        <Link href="/" className="btn btn-neutral mt-5">
-          Show All Matches
-        </Link>
       </div>
     </div>
   ) : (

@@ -27,8 +27,7 @@ export async function verifyToken(token: string) {
         cache: 'no-cache',
       });
       if (response.status === 200) {
-        const { data } = await response.json();
-        return data;
+        return true;
       }
     }
     return null;
@@ -41,9 +40,13 @@ export async function logout(): Promise<boolean> {
   try {
     const cookies = new Cookies();
     const token = cookies.get('token') ?? null;
+    const auth = cookies.get('auth') ?? null;
 
-    if (token === null) throw new Error('Token not found.');
-    else cookies.remove('token');
+    if (token === null || auth === null) throw new Error('Token or auth not found.');
+    else {
+      cookies.remove('token');
+      cookies.remove('auth');
+    }
 
     return true;
   } catch (e) {

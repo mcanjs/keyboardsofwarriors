@@ -1,6 +1,4 @@
-import { prisma } from '@/src/libs/prisma';
 import { getToken } from '@/src/utils/auth';
-import { compare } from 'bcrypt';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -30,6 +28,13 @@ export async function POST(request: NextRequest) {
     response.cookies.set({
       name: 'token',
       value: token,
+      path: '/',
+      maxAge: 60 * 60,
+    });
+
+    response.cookies.set({
+      name: 'auth',
+      value: JSON.stringify(user.data),
       path: '/',
       maxAge: 60 * 60,
     });

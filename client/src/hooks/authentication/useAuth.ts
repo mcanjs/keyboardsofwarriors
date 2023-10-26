@@ -5,7 +5,7 @@ import { IUser } from '@/src/interfaces/user.interface';
 const useAuthFromServer = async () => {
   const { cookies } = require('next/headers');
   const cookieStore = cookies();
-  const { value: auth } = cookieStore.get('auth') ?? { value: null };
+  const { value: auth } = (await cookieStore.get('auth')) ?? { value: null };
 
   return JSON.parse(auth);
 };
@@ -16,7 +16,7 @@ export function useAuth() {
 
   const getVerifiedToken = async () => {
     const cookies = new Cookies();
-    const userAuth = cookies.get('auth') ?? null;
+    const userAuth = (await cookies.get('auth')) ?? null;
     setAuth(userAuth);
     setIsLoading(false);
   };

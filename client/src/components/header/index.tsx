@@ -5,6 +5,7 @@ import { GiCrossedSwords } from 'react-icons/gi';
 
 export default async function Header() {
   const auth = await useAuth.fromServer();
+
   return (
     <header className="navbar w-full h-[80px] fixed top-0 left-0 z-[1] flex-wrap gap-1 p-0 bg-base-200 md:flex-nowrap md:flex-row ">
       <div className="container mx-auto">

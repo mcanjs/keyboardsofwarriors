@@ -43,10 +43,14 @@ export class AuthController {
   public logIn = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userData: User = req.body;
-      const { cookie, findUser } = await this.auth.login(userData);
+      const { cookie, user } = await this.auth.login(userData);
 
       res.setHeader('Set-Cookie', [cookie]);
-      res.status(200).json({ data: findUser, message: 'login', cookie });
+      res.status(200).json({
+        data: user,
+        message: 'login',
+        cookie,
+      });
     } catch (error) {
       next(error);
     }
@@ -54,20 +58,7 @@ export class AuthController {
 
   public verify = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userData = await this.prisma.user.findFirst({
-        where: {
-          id: req.user.id,
-        },
-        select: {
-          id: true,
-          email: true,
-          username: true,
-          rank: true,
-          admin: true,
-        },
-      });
       res.status(200).json({
-        data: userData,
         message: 'verify',
       });
     } catch (error) {
