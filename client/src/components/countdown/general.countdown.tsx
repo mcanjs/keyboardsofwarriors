@@ -5,6 +5,7 @@ interface IProps {
   onCountdownEnded?: Function;
   withProgressBar?: boolean;
   isWaitProtocol?: boolean;
+  refresh?: boolean;
 }
 
 export default function GeneralCountdown(props: IProps) {
@@ -22,8 +23,19 @@ export default function GeneralCountdown(props: IProps) {
     return () => {
       clearInterval(timer);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seconds, props.isWaitProtocol]);
+
+  useEffect(() => {
+    setSeconds(props.seconds);
+  }, [props.seconds]);
+
+  useEffect(() => {
+    if (props.refresh) {
+      setSeconds(props.seconds);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.refresh]);
 
   const checkNeedPrefix = (num: number): string => {
     if (num < 10) {

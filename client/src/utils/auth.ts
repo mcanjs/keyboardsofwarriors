@@ -1,29 +1,37 @@
-import { JWTPayload, SignJWT, jwtVerify } from 'jose';
 import { AUTH_PAGES } from './constants';
 import Cookies from 'universal-cookie';
 
-export const generateToken = async (payload: JWTPayload) => {
-  return await new SignJWT(payload)
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime('1d')
-    .sign(getJwtSecretKey());
+export const getToken = (cookieStr: string) => {
+  let token = '';
+  const clearSpaces = cookieStr.replaceAll(' ', '');
+  const cookieItems = clearSpaces.split(';');
+
+  cookieItems.forEach((cookie) => {
+    if (cookie.includes('Authorization')) {
+      token = cookie.replace('Authorization=', '');
+    }
+  });
+
+  return token;
 };
 
-export const getJwtSecretKey = () => {
-  const secretKey = process.env.NEXT_PUBLIC_JWT_SECRET_KEY;
-
-  if (!secretKey) {
-    throw new Error('Jwt secret key not found');
-  }
-
-  return new TextEncoder().encode(secretKey);
-};
-
-export async function verifyJwtToken(token: string) {
+export async function verifyToken(token: string) {
   try {
-    const { payload } = await jwtVerify(token, getJwtSecretKey());
-    return payload;
+    if (token) {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        cache: 'no-cache',
+      });
+      if (response.status === 200) {
+        const { data } = await response.json();
+        return data;
+      }
+    }
+    return null;
   } catch (e) {
     return null;
   }

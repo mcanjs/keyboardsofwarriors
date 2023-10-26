@@ -1,5 +1,5 @@
-import { IMatcherFoundedData } from "@/src/interfaces/socket/matcher.interface";
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { IMatcherFoundedData } from '@/src/interfaces/socket/matcher.interface';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface IMatchmakerStore {
   isMatchFounded: boolean;
@@ -14,7 +14,7 @@ const initialState: IMatchmakerStore = {
 };
 
 export const slice = createSlice({
-  name: "matchmaker",
+  name: 'matchmaker',
   initialState,
   reducers: {
     changeIsMatchFounded(state, action: PayloadAction<boolean>) {
@@ -23,10 +23,7 @@ export const slice = createSlice({
     changeIsUserAccepted(state, action: PayloadAction<boolean>) {
       state.isUserAccepted = action.payload;
     },
-    changeMatchFoundedData(
-      state,
-      action: PayloadAction<undefined | IMatcherFoundedData>
-    ) {
+    changeMatchFoundedData(state, action: PayloadAction<undefined | IMatcherFoundedData>) {
       state.matchFoundedData = action.payload;
     },
     matchmakerDefaultStates(state) {
@@ -37,10 +34,6 @@ export const slice = createSlice({
   },
 });
 
-export const {
-  changeIsMatchFounded,
-  changeIsUserAccepted,
-  changeMatchFoundedData,
-  matchmakerDefaultStates,
-} = slice.actions;
+export const { changeIsMatchFounded, changeIsUserAccepted, changeMatchFoundedData, matchmakerDefaultStates } =
+  slice.actions;
 export default slice.reducer;

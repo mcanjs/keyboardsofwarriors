@@ -25,8 +25,6 @@ export const AuthMiddleware = async (req: RequestWithUser, res: Response, next: 
       const findUser = await users.findUnique({ where: { id } });
 
       if (findUser) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
         req.user = findUser;
         next();
       } else {

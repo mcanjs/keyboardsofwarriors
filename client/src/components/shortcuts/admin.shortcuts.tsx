@@ -8,7 +8,7 @@ interface IProps {
 
 export default function AdminShortcuts({ socket }: IProps) {
   const { auth } = useAuth();
-  return socket && auth?.isAdmin ? (
+  return socket && auth?.admin.isAdmin ? (
     <div className="drawer drawer-end">
       <input id="admin-shortcut-drawer" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content">

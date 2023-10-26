@@ -1,53 +1,23 @@
 import { prisma } from '@/src/libs/prisma';
-import { generateToken, getJwtSecretKey } from '@/src/utils/auth';
+import { getToken } from '@/src/utils/auth';
 import { compare } from 'bcrypt';
-import { JWTPayload, SignJWT } from 'jose';
 import { NextRequest, NextResponse } from 'next/server';
-
-async function userIsAdmin(adminId: string): Promise<boolean> {
-  const user = await prisma.admin.findUnique({
-    where: {
-      id: adminId,
-    },
-  });
-
-  if (user?.isAdmin) {
-    return true;
-  }
-  return false;
-}
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
 
-  const user = await prisma.user.findUnique({
-    where: {
-      email: body.email,
+  const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/login`, {
+    headers: {
+      'Content-Type': 'application/json',
     },
+    method: 'POST',
+    body: JSON.stringify(body),
   });
 
-  if (user) {
-    const isPasswordMatching: boolean = await compare(body.password, user.password);
-    if (!isPasswordMatching)
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Password is not matching',
-        },
-        {
-          status: 409,
-        }
-      );
+  const user = await response.json();
 
-    const isAdmin = await userIsAdmin(user.adminId);
-    const tokenData: JWTPayload = {
-      id: user.id,
-      email: body.email,
-      username: user.username,
-      isAdmin,
-    };
-    const token = await generateToken(tokenData);
-
+  if (response.status === 200 && user.message === 'login' && user.cookie) {
+    const token = getToken(user.cookie);
     const response = NextResponse.json(
       {
         success: true,
@@ -61,6 +31,7 @@ export async function POST(request: NextRequest) {
       name: 'token',
       value: token,
       path: '/',
+      maxAge: 60 * 60,
     });
 
     return response;
@@ -68,7 +39,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        message: 'User not found',
+        message: 'Email or password is incorrect',
       },
       {
         status: 409,

@@ -1,11 +1,11 @@
 import { prisma } from '@/src/libs/prisma';
 import { useAuth } from '@/src/hooks/authentication/useAuth';
 import ResultSummaryScreen from '@/src/components/screens/result/summary.screen';
-import { JWTPayload } from 'jose';
 import ResultDetailScreen from '@/src/components/screens/result/detail.screen';
 import { Matches } from '@prisma/client';
+import { IUser } from '@/src/interfaces/user.interface';
 
-async function getData(matchId: string, auth: JWTPayload | null) {
+async function getData(matchId: string, auth: IUser) {
   const isValid = new RegExp('^[0-9a-fA-F]{24}$').test(matchId);
   const userId = auth?.id as string;
   if (isValid) {

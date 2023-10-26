@@ -1,10 +1,10 @@
-"use client";
-import { Socket } from "socket.io-client";
-import CompetitiveGameScreen from "./game.screen";
-import CompetitiveGameLoadScreen from "./load";
-import { useEffect, useState } from "react";
-import { IMatcherRoomData } from "@/src/interfaces/socket/matcher.interface";
-import { useRouter } from "next/navigation";
+'use client';
+import { Socket } from 'socket.io-client';
+import CompetitiveGameScreen from './game.screen';
+import CompetitiveGameLoadScreen from './load';
+import { useEffect, useState } from 'react';
+import { IMatcherRoomData } from '@/src/interfaces/socket/matcher.interface';
+import { useRouter } from 'next/navigation';
 
 interface IProps {
   socket: Socket;
@@ -24,24 +24,24 @@ export default function Game({ socket, queueData }: IProps) {
       router.push(`/result/${gameId}`);
     }
 
-    if (socket && typeof socket !== "undefined") {
+    if (socket && typeof socket !== 'undefined') {
       //? Competitive user connected emit
-      socket.emit("competitive:user-connected", queueData);
+      socket.emit('competitive:user-connected', queueData);
 
       //? Competitive starting event listener
-      socket.on("competitive:starting", onCompetitiveStarting);
+      socket.on('competitive:starting', onCompetitiveStarting);
 
       //? Competitive canceled event listener
-      socket.on("competitive:canceled", onCompetitiveCanceled);
+      socket.on('competitive:canceled', onCompetitiveCanceled);
     }
 
     return () => {
-      if (typeof socket !== "undefined") {
-        socket.off("competitive:starting", onCompetitiveStarting);
-        socket.off("competitive:canceled", onCompetitiveCanceled);
+      if (typeof socket !== 'undefined') {
+        socket.off('competitive:starting', onCompetitiveStarting);
+        socket.off('competitive:canceled', onCompetitiveCanceled);
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket]);
 
   return (
@@ -50,9 +50,7 @@ export default function Game({ socket, queueData }: IProps) {
         {isGameLoading ? (
           <div className="max-w-lg mx-auto">
             <CompetitiveGameLoadScreen />
-            <p className="p-3 text-center">
-              The connection of the opponent is expected in the game
-            </p>
+            <p className="p-3 text-center">The connection of the opponent is expected in the game</p>
           </div>
         ) : (
           <CompetitiveGameScreen socket={socket} queueData={queueData} />

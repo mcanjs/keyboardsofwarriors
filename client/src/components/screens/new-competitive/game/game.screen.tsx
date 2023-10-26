@@ -52,8 +52,7 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
 
   //? Events
   const onChangeInput = (e: ChangeEvent<HTMLInputElement>) => {
-    if (!isGameStarted) setIsGameStarted(true);
-    activeWord;
+    if (!isGameStarted && !isGameFinished) setIsGameStarted(true);
   };
 
   const checkIgnoredKeys = (e: KeyboardEvent) => {
@@ -77,7 +76,7 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
     });
   };
 
-  const checkCapsLock = (e: KeyboardEvent) => {
+  const checkCapsLock = (e: globalThis.KeyboardEvent) => {
     if (e.getModifierState('CapsLock')) {
       setIsCapsLockOn(true);
     } else {
@@ -86,11 +85,14 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
   };
 
   const onKeyDownInput = (e: KeyboardEvent) => {
+    if (isGameFinished && !isGameStarted) {
+      e.preventDefault();
+      return;
+    }
+
     const isPressedSpace = e.key === ' ';
     const target = e.target as HTMLInputElement;
     const isIgnoredKey = checkIgnoredKeys(e);
-
-    checkCapsLock(e);
 
     //? Ignored Keys
     if (isIgnoredKey) {
@@ -148,9 +150,7 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
         if (lettersRef.current[activeWord].length - 1 >= activeLetter) {
           if (lettersRef.current[activeWord][activeLetter].innerText === e.key) {
             lettersRef.current[activeWord][activeLetter].classList.add('!text-success');
-            console.log('dogru');
           } else {
-            console.log('yanlis');
             lettersRef.current[activeWord][activeLetter].classList.add('!text-error');
             setMistakeLetter(
               activeLetter,
@@ -192,7 +192,7 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
     const containerWidth = wordContainer.current?.clientWidth;
     if (
       containerWidth &&
-      containerWidth >
+      containerWidth >=
         caretWordCalculator + wordsRef.current[activeWord].clientWidth + wordsRef.current[activeWord + 1].clientWidth
     ) {
       setCaretWordCalculator((old) => old + wordsRef.current[activeWord].clientWidth);
@@ -306,6 +306,11 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket]);
 
+  useEffect(() => {
+    document.addEventListener('keyup', checkCapsLock);
+    document.addEventListener('keydown', checkCapsLock);
+  }, []);
+
   return (
     <div className="container mx-auto relative">
       <div className={`${!isGameStarted ? 'blur' : ''} relative select-none`}>
@@ -333,7 +338,6 @@ export default function CompetitiveGameScreen({ socket, queueData }: IProps) {
             type="text"
             className="pointer-events-none absolute z-[-1] cursor-default opacity-0"
             onKeyDown={onKeyDownInput}
-            onKeyUp={checkCapsLock}
             onChange={onChangeInput}
             onFocus={onFocusInput}
             onBlur={onBlurInput}

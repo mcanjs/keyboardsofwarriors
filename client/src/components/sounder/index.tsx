@@ -31,6 +31,7 @@ export default function Sounder() {
         dispatch(changeCanPlay(false));
       });
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canPlay, soundType]);
 
   return <audio ref={soundRef} className="hidden invisible"></audio>;

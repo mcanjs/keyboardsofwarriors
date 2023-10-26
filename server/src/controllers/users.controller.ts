@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { Container } from 'typedi';
-
+import crypto from 'crypto';
 import { UserService } from '@services/users.service';
 import { User } from '@prisma/client';
 
@@ -31,7 +31,9 @@ export class UserController {
   public createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userData: User = req.body;
-      const createUserData: User = await this.user.createUser(userData);
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const verificationCodeToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+      const createUserData: User = await this.user.createUser(userData, verificationCodeToken);
 
       res.status(201).json({ data: createUserData, message: 'created' });
     } catch (error) {

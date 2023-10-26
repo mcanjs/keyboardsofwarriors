@@ -22,6 +22,7 @@ export default function OnlineUserCounter({ value, direction = 'up', className }
     if (isInView) {
       motionValue.set(direction === 'down' ? 0 : value);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [motionValue, isInView]);
 
   useEffect(

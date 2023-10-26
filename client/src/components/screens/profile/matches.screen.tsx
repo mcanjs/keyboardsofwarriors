@@ -1,13 +1,14 @@
+import { IUser } from '@/src/interfaces/user.interface';
 import { prisma } from '@/src/libs/prisma';
 import { Matches, User } from '@prisma/client';
-import { JWTPayload } from 'jose';
+
 import { GiNextButton, GiPreviousButton } from 'react-icons/gi';
 
 interface IProps {
-  user: User;
+  user: IUser;
 }
 
-async function getUserMatches(authedUser: JWTPayload) {
+async function getUserMatches(authedUser: IUser) {
   const matches = await prisma.matches.findMany({
     take: 5,
     orderBy: {

@@ -163,6 +163,7 @@ export default function Competitive() {
         socket.off('queue:banned', onQueueBanned);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, auth]);
 
   const findMatch = () => {

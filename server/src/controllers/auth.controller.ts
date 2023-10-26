@@ -52,6 +52,29 @@ export class AuthController {
     }
   };
 
+  public verify = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const userData = await this.prisma.user.findFirst({
+        where: {
+          id: req.user.id,
+        },
+        select: {
+          id: true,
+          email: true,
+          username: true,
+          rank: true,
+          admin: true,
+        },
+      });
+      res.status(200).json({
+        data: userData,
+        message: 'verify',
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public logOut = async (req: RequestWithUser, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userData: User = req.user;

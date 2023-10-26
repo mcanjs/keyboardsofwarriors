@@ -1,8 +1,6 @@
-☐ Next.js authentication structure need to be changed @client @server
 ✔ Client-side admin shortcuts NEW UI @client @done(23-07-19 03:03)
 ✔ Admin and Premium feature need to be added @server @database @done(23-07-19 02:40)
 ✔ Login page error actions @client @done(23-07-28 21:56)
-☐ i18n will be added @client
 ✔ Register feature @client @server @done(23-08-14 15:44)
 ✔ Login page yup validation @client @done(23-07-28 21:55)
 ✔ Login page bug fix @client @done(23-07-30 20:41)
@@ -12,7 +10,6 @@
 ✔ User dc to in game will be added structure @client @server @done(23-08-18 04:31)
 ✔ Profile -> matches page will be added @client @done(23-08-18 04:31)
 ✔ Socket.io structure will be changed to namespaces @server @started(23-08-18 16:13) @done(23-08-20 01:03) @lasted(1d8h50m5s)
-☐ Private game structure @client @server
 ✔ Game Screens will be change @client @server @done(23-09-15 01:31)
 ✔ BETA badge will be added next to logo @client @started(23-08-24 00:43) @done(23-08-24 00:54) @lasted(11m16s)
 ✔ Admin dashboard @admin @done(23-08-18 05:08)
@@ -22,5 +19,18 @@
 ✔ When game starting to auto focus key input @client @done(23-09-14 19:51)
 ✔ Footer placeholder text will be changed @client @done(23-08-24 01:20)
 ✔ When user accepted match and refresh or quit to page not have a ban time @done(23-09-15 01:28)
+✔ Improve mode game options will be developed @client @done(23-10-12 21:14)
+
+// SPRINT 2
+✔ Improve Mode when pressed to restart game not reseting to countdown @client @done(23-10-18 03:48)
+✔ When not focused game input if user activated to caps-lock warning alert not showing @client @started(23-10-18 03:48) @done(23-10-18 04:00) @lasted(12m6s)
+✔ Competitive game end waiting page hidable when user pressed a key @client @done(23-10-18 04:25)
+✔ Profile banned status not true @client @started(23-10-18 04:25) @done(23-10-18 04:33) @lasted(8m44s)
+✔ Authentication structure need to be changed @client @server @done(23-10-26 04:15)
+☐ Private game structure @client @server
 ☐ Bug report, opinions and suggestion system will be added @client @server
 ☐ How to play page will be created and this informations will be added to home page @client
+
+// SPRINT 3
+☐ Other game language words will be added @client @server
+☐ i18n will be added @client

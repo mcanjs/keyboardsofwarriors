@@ -1,5 +1,4 @@
 import { useAuth } from '@/src/hooks/authentication/useAuth';
-import { prisma } from '@/src/libs/prisma';
 import { capitalizeFirstLetter } from '@/src/utils/helper';
 import MMR from '@/src/utils/mmr';
 import Link from 'next/link';
@@ -7,18 +6,12 @@ import { IoArrowForwardOutline } from 'react-icons/io5';
 
 async function getUserData() {
   const authedUser = await useAuth.fromServer();
-  const user = await prisma.user.findUnique({
-    where: {
-      //@ts-ignore
-      email: authedUser.email,
-    },
-  });
-
-  return user;
+  return authedUser;
 }
 
 export default async function Matchmaker() {
   const data = await getUserData();
+
   return data ? (
     <div className="flex-1 h-full flex flex-row flex-wrap container mx-auto gap-4 md:flex-nowrap">
       <Link href="/competitive" className="flex basis-full md:basis-1/3 p-3">
