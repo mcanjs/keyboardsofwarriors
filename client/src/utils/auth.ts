@@ -1,3 +1,4 @@
+import { jwtVerify } from 'jose';
 import { AUTH_PAGES } from './constants';
 import Cookies from 'universal-cookie';
 
@@ -15,22 +16,22 @@ export const getToken = (cookieStr: string) => {
   return token;
 };
 
-export async function verifyToken(token: string) {
+export function getJwtSecretKey() {
+  const secretKey = process.env.NEXT_PUBLIC_JWT_SECRET_KEY;
+
+  if (!secretKey) {
+    throw new Error('JWT secret key is not available');
+  }
+
+  return new TextEncoder().encode(secretKey);
+}
+
+export async function verifyJwtToken(token: string) {
   try {
-    if (token) {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/verify`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        cache: 'no-cache',
-      });
-      if (response.status === 200) {
-        return true;
-      }
-    }
-    return null;
+    const { payload } = await jwtVerify(token, getJwtSecretKey(), {
+      algorithms: ['HS256'],
+    });
+    return payload;
   } catch (e) {
     return null;
   }

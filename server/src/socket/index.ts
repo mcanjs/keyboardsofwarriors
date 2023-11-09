@@ -3,6 +3,7 @@ import http from 'http';
 import { SOCKET_PORT } from '@/config';
 import { Server as SocketIOServer } from 'socket.io';
 import CompetitiveSocket from './competitive.socket';
+import CustomSocket from './custom.socket';
 
 export class ServerSocket {
   private io: SocketIOServer;
@@ -20,6 +21,7 @@ export class ServerSocket {
 
     //? Sockets
     new CompetitiveSocket(this.io);
+    new CustomSocket(this.io);
   }
 
   public listen(): void {

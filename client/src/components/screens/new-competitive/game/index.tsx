@@ -1,7 +1,7 @@
 'use client';
 import CompetitiveGameScreen from './game.screen';
 import { Socket } from 'socket.io-client';
-import { IMatcherFoundedData } from '@/src/interfaces/socket/matcher.interface';
+import { IMatcherFoundedData } from '@/src/interfaces/matcher.interface';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import CompetitiveGameLoadScreen from './load';

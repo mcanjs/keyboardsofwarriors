@@ -221,6 +221,26 @@ export default class Competitive {
     }
   }
 
+  private async updateUsersWinLoseDataInDB(winnerId: string, loserId: string): Promise<void> {
+    await this.prisma.user.update({
+      where: {
+        id: winnerId,
+      },
+      data: {
+        win: { increment: 1 },
+      },
+    });
+
+    await this.prisma.user.update({
+      where: {
+        id: loserId,
+      },
+      data: {
+        lose: { increment: 1 },
+      },
+    });
+  }
+
   private async gameFinished(matchData: IMatcherFoundedData): Promise<void> {
     const rank = MMR.generateMmrToString(matchData.rank);
     const room: ICompetitiveRoom = this.competitiveRooms[matchData.queueLanguage][rank][matchData.roomId];
@@ -237,6 +257,8 @@ export default class Competitive {
           matchLog: await this.getCompetitiveMatchLog(matchData),
         },
       });
+
+      await this.updateUsersWinLoseDataInDB(winnerId, loserId);
 
       room.isGameEnded = true;
       this.io.to(matchData.roomId).emit('competitive:redirect-players', match.id);

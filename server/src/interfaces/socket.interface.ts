@@ -37,3 +37,11 @@ export interface ISocketQueueListActiveQueue {
   rank: number;
   roomId: string;
 }
+
+export interface ISocketCustomInRoomList {
+  [key: string]: ISocketCustomInRoomData;
+}
+
+export interface ISocketCustomInRoomData {
+  roomId: string;
+}

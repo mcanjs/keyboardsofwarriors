@@ -1,4 +1,4 @@
-import { IGameLanguages } from '../interfaces/socket/game.interface';
+import { IGameLanguages } from '../interfaces/game.interface';
 
 export const checkGameActiveLanguageIsVerify = (language: IGameLanguages): boolean => {
   if (language !== 'en' && language !== 'tr') return false;

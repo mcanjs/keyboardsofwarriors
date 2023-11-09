@@ -1,4 +1,4 @@
-import { IMatcherFoundedData } from '@/src/interfaces/socket/matcher.interface';
+import { IMatcherFoundedData } from '@/src/interfaces/matcher.interface';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface IMatchmakerStore {

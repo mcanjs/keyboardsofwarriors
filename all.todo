@@ -27,7 +27,7 @@
 ✔ Competitive game end waiting page hidable when user pressed a key @client @done(23-10-18 04:25)
 ✔ Profile banned status not true @client @started(23-10-18 04:25) @done(23-10-18 04:33) @lasted(8m44s)
 ✔ Authentication structure need to be changed @client @server @done(23-10-26 04:15)
-☐ Private game structure @client @server
+☐ Private game structure @client @server @started(23-10-27 01:08)
 ☐ Bug report, opinions and suggestion system will be added @client @server
 ☐ How to play page will be created and this informations will be added to home page @client
 

@@ -4,11 +4,11 @@ import CompetitiveStat from '../../../stats/game.stats';
 import GeneralCountdown from '../../../countdown/general.countdown';
 import { useRouter } from 'next/navigation';
 import { Socket } from 'socket.io-client';
-import { IMatcherRoomData } from '@/src/interfaces/socket/matcher.interface';
+import { IMatcherRoomData } from '@/src/interfaces/matcher.interface';
 import {
   ICompetitiveGameInformations,
   ICompetitiveGameInformationsTimeouts,
-} from '@/src/interfaces/socket/competitive.interface';
+} from '@/src/interfaces/competitive.interface';
 import CompetitiveGameFinished from './finish.screen';
 import { toast } from 'react-hot-toast';
 

@@ -3,10 +3,7 @@
 import { GeneralGameStat } from '@/src/components/charts/stats/general.stats';
 import GeneralCountdown from '@/src/components/countdown/general.countdown';
 import { useAppDispatch, useAppSelector } from '@/src/hooks/redux/hook';
-import {
-  ICompetitiveIncorrectDetail,
-  ICompetitiveIncorrectLetter,
-} from '@/src/interfaces/socket/competitive.interface';
+import { ICompetitiveIncorrectDetail, ICompetitiveIncorrectLetter } from '@/src/interfaces/competitive.interface';
 import { changeRestartRequest } from '@/src/redux/features/improve/improve.slice';
 import { generateWord } from '@/src/utils/helper';
 import { ChangeEvent, FocusEvent, KeyboardEvent, useCallback, useEffect, useRef, useState } from 'react';

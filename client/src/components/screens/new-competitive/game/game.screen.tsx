@@ -5,8 +5,8 @@ import CompetitiveStat from '@/src/components/stats/game.stats';
 import {
   ICompetitiveGameInformations,
   ICompetitiveGameInformationsTimeouts,
-} from '@/src/interfaces/socket/competitive.interface';
-import { IMatcherRoomData } from '@/src/interfaces/socket/matcher.interface';
+} from '@/src/interfaces/competitive.interface';
+import { IMatcherRoomData } from '@/src/interfaces/matcher.interface';
 import { ChangeEvent, FocusEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { BsCapslock } from 'react-icons/bs';

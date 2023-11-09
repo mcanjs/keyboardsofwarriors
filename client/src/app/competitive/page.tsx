@@ -13,10 +13,10 @@ import {
   matchmakerDefaultStates,
 } from '@/src/redux/features/matchmaker/matchmaker.slice';
 import { toast } from 'react-hot-toast';
-import { IMatcherFoundedData, IMatcherQueueBanData, IMatcherRoomData } from '@/src/interfaces/socket/matcher.interface';
+import { IMatcherFoundedData, IMatcherQueueBanData, IMatcherRoomData } from '@/src/interfaces/matcher.interface';
 import Game from '@/src/components/screens/new-competitive/game';
 import CompetitiveBannedModal from '@/src/components/modals/competitive/banned.modal';
-import { IGameLanguages } from '@/src/interfaces/socket/game.interface';
+import { IGameLanguages } from '@/src/interfaces/game.interface';
 import { capitalizeFirstLetter, checkGameActiveLanguageIsVerify } from '@/src/utils/helper';
 import AdminShortcuts from '@/src/components/shortcuts/admin.shortcuts';
 import MMR from '@/src/utils/mmr';

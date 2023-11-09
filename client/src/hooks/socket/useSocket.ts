@@ -1,9 +1,11 @@
 import React from 'react';
 import { Socket, io } from 'socket.io-client';
 import { useAuth } from '../authentication/useAuth';
+import { ISocketQueries } from '@/src/interfaces/socket.interface';
 
 interface IProps {
-  namespace?: '/' | '/private-rooms' | '/improve';
+  namespace?: '/' | '/custom' | '/custom/room';
+  queryParams?: { roomId?: string };
 }
 
 export const useSocket = (props?: IProps) => {
@@ -16,9 +18,16 @@ export const useSocket = (props?: IProps) => {
     }
 
     if (typeof socket === 'undefined' && auth !== null) {
+      const query: ISocketQueries = { email: auth.email };
+
+      if (props?.queryParams?.roomId) {
+        query.roomId = props.queryParams.roomId;
+      }
+
       const socketIo = io(`${process.env.NEXT_PUBLIC_SOCKET_URL}${props?.namespace || '/'}`, {
         reconnectionDelayMax: 10000,
-        query: { email: auth.email },
+        query: query,
+        forceNew: query.roomId ? true : false,
       });
 
       //? Update Socket for state

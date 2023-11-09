@@ -13,8 +13,10 @@
     "schema": "src/prisma/schema.prisma"
   },
   "dependencies": {
+    "@faker-js/faker": "^8.2.0",
     "@prisma/client": "^5.1.1",
     "@reduxjs/toolkit": "^1.9.5",
+    "@tanstack/react-table": "^8.10.7",
     "@types/react": "^18.2.20",
     "@types/react-dom": "18.0.11",
     "bcrypt": "^5.1.0",
@@ -26,6 +28,7 @@
     "eslint-config-next": "13.2.4",
     "formik": "^2.4.2",
     "framer-motion": "^10.15.2",
+    "jose": "^5.0.1",
     "lottie-react": "^2.4.0",
     "next": "^13.4.12",
     "polished": "^4.2.2",
