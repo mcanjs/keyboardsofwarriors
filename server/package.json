@@ -16,7 +16,7 @@
     "prisma:migrate": "prisma migrate dev --preview-feature",
     "prisma:generate": "prisma generate",
     "prisma:development-migrate": "dotenv -e .env.development.local -- npx prisma db pull",
-    "deploy:prod": "npm run build && pm2 start ecosystem.config.js --only app,socket"
+    "deploy:prod": "npm run build && pm2 start ecosystem.config.js --only app"
   },
   "prisma": {
     "schema": "src/prisma/schema.prisma"
