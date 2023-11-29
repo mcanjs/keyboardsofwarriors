@@ -28,6 +28,9 @@ export const useSocket = (props?: IProps) => {
         reconnectionDelayMax: 10000,
         query: query,
         forceNew: query.roomId ? true : false,
+        auth: {
+          token: document.cookie.replace(/(?:(?:^|.*;\s*)token\s*=\s*([^;]*).*$)|^.*$/, '$1'),
+        },
       });
 
       //? Update Socket for state

@@ -4,6 +4,7 @@ import { SOCKET_PORT } from '@/config';
 import { Server as SocketIOServer } from 'socket.io';
 import CompetitiveSocket from './competitive.socket';
 import CustomSocket from './custom.socket';
+import { ValidateToken } from '@/utils/validateToken';
 
 export class ServerSocket {
   private io: SocketIOServer;
@@ -17,6 +18,17 @@ export class ServerSocket {
         credentials: true,
       },
       transports: ['websocket', 'polling'],
+    });
+
+    //? Middleware
+    this.io.use((socket, next) => {
+      const token = socket.handshake.auth.token;
+
+      if (typeof token !== 'undefined' && ValidateToken(token)) {
+        return next();
+      } else {
+        return next(new Error('Authentication failed.'));
+      }
     });
 
     //? Sockets
