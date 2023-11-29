@@ -56,7 +56,7 @@ body {
 }
 
 .incorrect-word span {
-  @apply !text-error;
+  @apply !text-red-500;
 }
 
 .word-container div span {

@@ -5,6 +5,7 @@ import { ICompetitiveGameInformations, ICompetitiveRoom, ICompetitiveRoomUser } 
 import { GenerateWord } from './word.generator';
 import {
   ICustomRoom,
+  ICustomRoomClientData,
   ICustomRoomDataForClient,
   ICustomRoomParameters,
   ICustomRoomPlayer,
@@ -96,7 +97,7 @@ export const generateCustomRoomParametersObject = (): ICustomRoomParameters => {
   };
 };
 
-export const generateCustomRoomStatusObject = (): ICustomRoomStatus => {
+export const generateCustomRoomStatusObject = (language: IGameLanguages, requestedWord: number): ICustomRoomStatus => {
   return {
     createDate: new Date(),
     isGameReady: false,
@@ -104,6 +105,7 @@ export const generateCustomRoomStatusObject = (): ICustomRoomStatus => {
     isPreCountdownFinished: false,
     isGameStarted: false,
     isGameFinished: false,
+    words: GenerateWord(language, requestedWord),
   };
 };
 
@@ -113,7 +115,7 @@ export const generateCustomRoomPlayerGameDataObject = (): ICustomRoomPlayerGameD
     isUserConnected: false,
     isSeenGameScreen: false,
     isSeenPreCountdown: false,
-    isFinishedPreCountdown: false,
+    stat: undefined,
   };
 };
 
@@ -133,17 +135,19 @@ export const generateCustomRoomPlayerObject = (user: ISocketUser, socketId: stri
 };
 
 export const generateCustomRoomObject = (): ICustomRoom => {
+  const params = generateCustomRoomParametersObject();
   return {
-    parameters: generateCustomRoomParametersObject(),
-    roomStatus: generateCustomRoomStatusObject(),
+    parameters: params,
+    roomStatus: generateCustomRoomStatusObject(params.language, params.words),
     players: [],
   };
 };
 
-export const generateCustomRoomPlayersObjectForClient = (players: ICustomRoomPlayer[]): ICustomRoomPlayersDataForClient => {
+export const generateCustomRoomPlayersObjectForClient = (players: ICustomRoomPlayer[], words: string[]): ICustomRoomPlayersDataForClient => {
   const data: ICustomRoomPlayersDataForClient = {
     owner: undefined,
     away: undefined,
+    words,
   };
 
   for (let i = 0; i < players.length; i++) {
@@ -172,16 +176,26 @@ export const generateCustomRoomPlayersObjectForClient = (players: ICustomRoomPla
 };
 
 export const generateCustomRoomDataForClient = (roomData: ICustomRoom): ICustomRoomDataForClient => {
-  const { owner, away } = generateCustomRoomPlayersObjectForClient(roomData.players);
+  const { owner, away } = generateCustomRoomPlayersObjectForClient(roomData.players, roomData.roomStatus.words);
   return {
     parameters: roomData.parameters,
     owner,
     away,
+    words: roomData.roomStatus.words,
   };
 };
 
 export const generateSocketCustomInRoomList = (roomId: string): ISocketCustomInRoomData => {
   return {
     roomId,
+  };
+};
+
+export const generateCustomRoomClientData = (roomData: ICustomRoom): ICustomRoomClientData => {
+  return {
+    words: roomData.roomStatus.words,
+    time: roomData.parameters.time,
+    isTime: roomData.parameters.isTime,
+    language: roomData.parameters.language,
   };
 };

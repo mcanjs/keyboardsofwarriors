@@ -102,6 +102,7 @@ export default function PrivateRooms() {
               onChange={onChangeJoinIdInput}
               defaultValue={roomId}
               maxLength={6}
+              autoComplete="off"
             />
           </div>
           <div className="w-full">

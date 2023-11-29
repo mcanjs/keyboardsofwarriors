@@ -1,5 +1,11 @@
-import { generateCustomRoomDataForClient, generateCustomRoomObject, generateCustomRoomPlayerObject } from '@/core/generators/object.generator';
-import { ICustomIO, ICustomRoomParameters, ICustomRooms } from '@/interfaces/custom.interface';
+import {
+  generateCustomRoomClientData,
+  generateCustomRoomDataForClient,
+  generateCustomRoomObject,
+  generateCustomRoomPlayerObject,
+} from '@/core/generators/object.generator';
+import { GenerateWord } from '@/core/generators/word.generator';
+import { ICustomClientGameDataStats, ICustomIO, ICustomRoomParameters, ICustomRooms } from '@/interfaces/custom.interface';
 import { ISocketUser } from '@/interfaces/socket.interface';
 import { ValidateCustomRoomParams } from '@/utils/validateParams';
 import { PrismaClient } from '@prisma/client';
@@ -92,7 +98,7 @@ export default class Custom {
 
   public async addUserToSpecificRoom(user: ISocketUser, socketId: string, roomId: string): Promise<boolean> {
     if (this.customRooms[roomId]) {
-      if (this.customRooms[roomId].players.length < 2) {
+      if (this.customRooms[roomId].players.length < 2 && !this.customRooms[roomId].roomStatus.isGameReady) {
         const isOwner = this.customRooms[roomId].players.length === 0 ? true : false;
         const customRoomPlayerObject = generateCustomRoomPlayerObject(user, socketId, isOwner);
 
@@ -137,10 +143,43 @@ export default class Custom {
 
       if (room.players.length === 0) {
         delete this.customRooms[roomId];
+      } else if (room.roomStatus.isGameStarted || room.roomStatus.isGameReady) {
+        this.finishGameForPlayerDisconnected(roomId);
+        delete this.customRooms[roomId];
       } else if (isOwnerLeft) {
         room.players[0].isOwner = true;
         this.updateClientRoomData(roomId);
       }
+    }
+  }
+
+  private finishGameForPlayerDisconnected(roomId: string): void {
+    const room = this.customRooms[roomId];
+
+    if (room.players.length === 1) {
+      this.io.room.to(roomId).emit('room:player-left');
+    }
+  }
+
+  public playerFinishedGame(roomId: string): void {
+    this.io.room.to(roomId).emit('room:finished');
+    delete this.customRooms[roomId];
+  }
+
+  public updatePlayerStats(roomId: string, socketId: string, stat: ICustomClientGameDataStats): void {
+    try {
+      const room = this.customRooms[roomId];
+      if (room && room.players.length > 0) {
+        for (let i = 0; i < room.players.length; i++) {
+          const player = room.players[i];
+          if (player.socketId === socketId) {
+            player.gameData.stat = stat;
+            break;
+          }
+        }
+      }
+    } catch (error) {
+      console.log('Update player stats error: ', error);
     }
   }
 
@@ -166,8 +205,46 @@ export default class Custom {
     return false;
   }
 
+  private gameStartable(roomId: string): void {
+    try {
+      const room = this.customRooms[roomId];
+
+      if (room) {
+        const data = generateCustomRoomClientData(room);
+        this.io.room.to(roomId).emit('room:start', data);
+      }
+    } catch (error) {
+      console.log('Game startable error:', error);
+    }
+  }
+
+  public updatePlayerSeenGameScreenData(socketId: string, roomId: string): void {
+    try {
+      if (this.customRooms[roomId]) {
+        const room = this.customRooms[roomId];
+        for (let i = 0; i < room.players.length; i++) {
+          if (room.players[i].socketId === socketId) {
+            room.players[i].gameData.isSeenGameScreen = true;
+          }
+        }
+
+        //? Check players seen to game screen
+        const isStartable: boolean = this.checkPlayersSeenToGameScreen(roomId);
+
+        if (isStartable) this.gameStartable(roomId);
+      }
+    } catch (e) {
+      console.log('Update player seen pre countdown data error', e);
+    }
+  }
+
   private redirectUsersToGameScreen(roomId: string): void {
-    this.io.room.to(roomId).emit('room:redirect-game');
+    const room = this.customRooms[roomId];
+
+    if (room) {
+      room.roomStatus.isGameReady = true;
+      this.io.room.to(roomId).emit('room:redirect-game');
+    }
   }
 
   private startPreCountdown(roomId: string): void {
@@ -191,6 +268,21 @@ export default class Custom {
     }
   }
 
+  public updatePlayerSeenPreCountdownData(socketId: string, roomId: string): void {
+    try {
+      if (this.customRooms[roomId]) {
+        const room = this.customRooms[roomId];
+        for (let i = 0; i < room.players.length; i++) {
+          if (room.players[i].socketId === socketId) {
+            room.players[i].gameData.isSeenPreCountdown = true;
+          }
+        }
+      }
+    } catch (e) {
+      console.log('Update player seen pre countdown data error', e);
+    }
+  }
+
   private checkGameIsPlayable(roomId: string): void {
     if (this.customRooms[roomId]) {
       const players = this.customRooms[roomId].players;
@@ -208,6 +300,9 @@ export default class Custom {
         const isValidParams = ValidateCustomRoomParams(params);
 
         if (isValidParams) {
+          if (this.customRooms[roomId].parameters.words !== params.words) {
+            this.customRooms[roomId].roomStatus.words = GenerateWord(params.language, params.words);
+          }
           this.customRooms[roomId].parameters = params;
           this.updateClientRoomData(roomId);
         } else {

@@ -28,14 +28,11 @@ export function GeneralGameStat(props: IProps) {
     let finalMistake = 0;
     for (let i = 0; i < Object.keys(props.mistakes).length; i++) {
       const mistake = props.mistakes[Object.keys(props.mistakes)[i]];
-      console.log(mistake);
       finalMistake += mistake.length;
     }
 
     return finalMistake;
   };
-
-  console.log(props);
 
   const options = {
     responsive: true,

@@ -1,5 +1,5 @@
 import { generateSocketCustomInRoomList } from '@/core/generators/object.generator';
-import { ICustomRoomParameters } from '@/interfaces/custom.interface';
+import { ICustomClientGameDataStats, ICustomRoomParameters } from '@/interfaces/custom.interface';
 import { ISocketCustomInRoomList, ISocketUser } from '@/interfaces/socket.interface';
 import Custom from '@/servers/custom.server';
 import { PrismaClient } from '@prisma/client';
@@ -91,8 +91,20 @@ export default class CustomSocket {
     this.custom.updateRoomParameters(clientParameters, socket.id, roomId);
   }
 
+  private playeSeenPreCountdown(socket: Socket, roomId: string): void {
+    this.custom.updatePlayerSeenPreCountdownData(socket.id, roomId);
+  }
+
   private userReadyStatus(socket: Socket, clientReadyStatus: boolean, roomId: string): void {
     this.custom.updateUserReadyStatus(clientReadyStatus, socket.id, roomId);
+  }
+
+  private playerSeenGameScreen(socket: Socket, roomId: string): void {
+    this.custom.updatePlayerSeenGameScreenData(socket.id, roomId);
+  }
+
+  private playerFinishedGame(socket: Socket, roomId: string): void {
+    this.custom.playerFinishedGame(roomId);
   }
 
   private intializeSocket(): void {
@@ -131,6 +143,15 @@ export default class CustomSocket {
 
       //? Ready user event listener
       socket.on('room:user-ready-status', this.userReadyStatus.bind(this, socket));
+
+      //? Player seen pre countdown event listener
+      socket.on('room:player-seen-pre-countdown', this.playeSeenPreCountdown.bind(this, socket));
+
+      //? Player seen game screen event listener
+      socket.on('room:player-seen-game-screen', this.playerSeenGameScreen.bind(this, socket));
+
+      //? Player finished game event listener
+      socket.on('room:player-finished', this.playerFinishedGame.bind(this, socket));
     });
   }
 }

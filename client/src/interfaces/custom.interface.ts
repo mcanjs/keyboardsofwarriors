@@ -43,3 +43,11 @@ export interface ISocketCustomRoomPlayerDataForClient {
   lose: number;
   isReady: boolean;
 }
+
+export interface ISocketCustomRoomClientData {
+  words: string[];
+  time: IGameTimes;
+  language: IGameLanguages;
+  isTime: boolean;
+}
+

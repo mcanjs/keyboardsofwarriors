@@ -32,6 +32,7 @@ export interface ICustomRoomStatus {
   isPreCountdownFinished: boolean;
   isGameStarted: boolean;
   isGameFinished: boolean;
+  words: string[];
 }
 
 export interface ICustomRoomPlayer {
@@ -50,8 +51,8 @@ export interface ICustomRoomPlayerGameData {
   isUserReady: boolean;
   isUserConnected: boolean;
   isSeenPreCountdown: boolean;
-  isFinishedPreCountdown: boolean;
   isSeenGameScreen: boolean;
+  stat: undefined | ICustomClientGameDataStats;
 }
 
 export interface ICustomRoomDataForClient extends ICustomRoomPlayersDataForClient {
@@ -61,6 +62,7 @@ export interface ICustomRoomDataForClient extends ICustomRoomPlayersDataForClien
 export interface ICustomRoomPlayersDataForClient {
   owner: undefined | ICustomRoomPlayerDataForClient;
   away: undefined | ICustomRoomPlayerDataForClient;
+  words: string[];
 }
 
 export interface ICustomRoomPlayerDataForClient {
@@ -69,4 +71,27 @@ export interface ICustomRoomPlayerDataForClient {
   isReady: boolean;
   win: number;
   lose: number;
+}
+
+export interface ICustomRoomClientData {
+  words: string[];
+  time: IGameTimes;
+  language: IGameLanguages;
+  isTime: boolean;
+}
+
+export interface ICustomClientIncorrectLetter {
+  [key: string]: ICustomClientIncorrectDetail[];
+}
+
+export interface ICustomClientIncorrectDetail {
+  expectedLetter: string;
+  writtenLetter: string;
+  letterIndex: number;
+}
+
+export interface ICustomClientGameDataStats {
+  corrects: number;
+  incorrects: number;
+  mistakes: ICustomClientIncorrectLetter;
 }

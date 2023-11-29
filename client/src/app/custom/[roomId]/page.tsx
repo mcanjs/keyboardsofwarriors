@@ -19,6 +19,7 @@ import {
 import CustomRoomFullyScreen from '@/src/components/screens/custom/room/fully.screen';
 import toast from 'react-hot-toast';
 import CustomRoomPreCountdown from '@/src/components/modals/competitive/pre-countdown.modal';
+import CustomGameScreen from '@/src/components/screens/custom/game/game.screen';
 
 export default function CustomGameRoom() {
   //? Hooks
@@ -68,7 +69,6 @@ export default function CustomGameRoom() {
 
     function onUpdate(data: ISocketCustomRoomDataForClient) {
       setRoomData(data);
-      console.log(data);
     }
 
     function onNotValidParameters() {
@@ -183,7 +183,11 @@ export default function CustomGameRoom() {
   const onClickPreCountdownUnReady = () => {
     setIsReadyUser(false);
     socket?.emit('room:user-ready-status', false, params.roomId);
-  }
+  };
+
+  const onSeenCountdown = () => {
+    socket?.emit('room:player-seen-pre-countdown', params.roomId);
+  };
 
   return isLoadingRoom ? (
     <CustomRoomLoadingScreen />
@@ -191,8 +195,8 @@ export default function CustomGameRoom() {
     <CustomRoomNotConnectedScreen />
   ) : isConnectedToRoom && isFullyRoom ? (
     <CustomRoomFullyScreen />
-  ) : canBeRedirect ? (
-    <p>Game screen</p>
+  ) : canBeRedirect && typeof socket !== 'undefined' ? (
+    <CustomGameScreen socket={socket} roomId={params.roomId as string} />
   ) : (
     <div className="container flex-1 mx-auto my-5">
       {typeof roomData !== 'undefined' && (
@@ -241,7 +245,9 @@ export default function CustomGameRoom() {
         </>
       )}
 
-      {isShowPreCountdown && <CustomRoomPreCountdown onPressedUnReady={onClickPreCountdownUnReady} />}
+      {isShowPreCountdown && (
+        <CustomRoomPreCountdown onPressedUnReady={onClickPreCountdownUnReady} onSeenCountdown={onSeenCountdown} />
+      )}
 
       {roomData?.away && roomData.owner && (
         <div className="mt-10 text-center">
